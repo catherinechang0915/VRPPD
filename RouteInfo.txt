@@ -1,0 +1,28 @@
+Vehicle 0	Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Time Window [0, 20]
+			Load at node 0
+			Service time at node 0
+	Node 1
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Time Window [0, 20]
+			Load at node 3
+			Service time at node 1
+	Node 3
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Time Window [0, 20]
+			Load at node -3
+			Service time at node 2
+	Node 5
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Time Window [0, 20]
+			Load at node 0
+			Service time at node 0

@@ -3,6 +3,7 @@ package src;
 public class Main {
 
     public static void main(String[] args) {
-	// write your code here
+	    Solver solver = new Solver("VRP.mod", "VRP.dat");
+	    solver.displaySolution();
     }
 }
