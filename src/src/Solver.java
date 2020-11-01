@@ -15,7 +15,7 @@ public class Solver {
 
     private int N;
     private int K;
-    private int[] capacity;
+    private double[] capacity;
     private Node[] nodes;
     private int[] X;
     private int[] Y;
@@ -26,14 +26,12 @@ public class Solver {
     private double[][] Q;
     private double[][] DL;
 
+    /**
+     * Solve the model with OPL
+     * @param modelFilePath specifies the file name for .mod file (including .mod)
+     * @param dataFilePath specifies the file name for .dat file (including .dat)
+     */
     public Solver (String modelFilePath, String dataFilePath) {
-        /**
-         * @Param modelFilePath specifies the file name for .mod file (including .mod)
-         * @Param dataFilePath specifies the file name for .dat file (including .dat)
-         * @Param N is the number of pickup-delivery pairs
-         * @Param K is the number of vehicles
-         * Solve the model with OPL
-         */
         readParam(WORKDIR + "\\" + dataFilePath);
         int status = 127;
         try {
@@ -80,6 +78,10 @@ public class Solver {
         }
     }
 
+    /**
+     * Read input information from .dat file, used later for node info display and visualization
+     * @param filePath path for the .dat file to read from
+     */
     private void readParam(String filePath) {
         File file = new File(filePath);
         if(file.isFile() && file.exists()){
@@ -113,14 +115,14 @@ public class Solver {
                 }
 
                 // set capacity
-                capacity = new int[K];
+                capacity = new double[K];
                 text = bufferedReader.readLine();
                 patten = Pattern.compile("capacity = \\[(.*)];");
                 matcher = patten.matcher(text);
                 if (matcher.find()) {
                     String[] c = matcher.group(1).split(",");
                     for (int i = 0; i < K; i++) {
-                        capacity[i] = Integer.parseInt(c[i]);
+                        capacity[i] = Double.parseDouble(c[i]);
                     }
                 } else {
                     throw new IllegalArgumentException("Wrong capacity.");
@@ -134,7 +136,7 @@ public class Solver {
                     text = bufferedReader.readLine();
                     matcher = patten.matcher(text);
                     if (matcher.find()) {
-                        String[] info = matcher.group(1).split("\\s+");
+                        String[] info = matcher.group(1).split(",");
                         nodes[i] = new Node(Integer.parseInt(info[0]),
                                 Integer.parseInt(info[1]),
                                 Integer.parseInt(info[2]),
@@ -194,10 +196,12 @@ public class Solver {
         }
     }
 
+    /**
+     * This method reads the decision variables from the solved opl model
+     * @throws IloException
+     */
     private void setParam() throws IloException {
-        /**
-         * This method reads the decision variables from the solved opl model
-         */
+
         IloIntMap xMap = opl.getElement("x").asIntMap();
         IloNumMap TMap = opl.getElement("T").asNumMap();
         IloNumMap QMap = opl.getElement("Q").asNumMap();
@@ -245,11 +249,12 @@ public class Solver {
         return routes;
     }
 
+    /**
+     * Find the consecutive path traversed by vehicle k
+     * @param k vehicle specified
+     * @return A list of nodes start from 0 and end at 2n + 1
+     */
     private List<Integer> constructRoute(int k) {
-        /**
-         * Find the consecutive path traversed by vehicle k
-         * @Return A list of nodes start from 0 and end at 2n +
-         */
         List<Integer> route = new LinkedList<>();
         int curr = 0;
         while (curr != 2 * N + 1) {
@@ -265,9 +270,14 @@ public class Solver {
         return route;
     }
 
+    /**
+     * display route information at each node for debug
+     * @param filename output filename
+     */
     public void displaySolution(String filename) {
         List<List<Integer>> routes = constructRoute();
         File file = new File(filename);
+        if (file.exists()) file.delete();
         BufferedWriter bufferedWriter = null;
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -279,7 +289,7 @@ public class Solver {
         }
         StringBuilder sb = new StringBuilder();
         for (int k = 0; k < routes.size(); k++) {
-            sb.append("Vehicle ").append(k).append("\n");
+            sb.append("Vehicle ").append(k).append(" with capacity ").append(capacity[k]).append("\n");
             List<Integer> route = routes.get(k);
             for (int i = 0; i < route.size(); i++) {
                 int node = route.get(i);
@@ -297,13 +307,13 @@ public class Solver {
                     sb.append("\tCost between ").append(distance(node, route.get(i + 1))).append("\n");
                 }
             }
-            System.out.println(sb.toString());
-            try {
-                bufferedWriter.write(sb.toString());
-                bufferedWriter.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        }
+        System.out.println(sb.toString());
+        try {
+            bufferedWriter.write(sb.toString());
+            bufferedWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -319,7 +329,7 @@ public class Solver {
         return N;
     }
 
-    public int[] getCapacity() {
+    public double[] getCapacity() {
         return capacity;
     }
 
