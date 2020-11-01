@@ -1,8 +1,8 @@
-// solution (optimal) with objective 9.84161925296378
+// solution (optimal) with objective 39.5498231854639
 // Quality Incumbent solution:
-// MILP objective                                 9.8416192530e+00
-// MILP solution norm |x| (Total, Max)            5.00000e+00  1.00000e+00
-// MILP solution error (Ax=b) (Total, Max)        0.00000e+00  0.00000e+00
+// MILP objective                                 3.9549823185e+01
+// MILP solution norm |x| (Total, Max)            7.94721e+01  1.84721e+01
+// MILP solution error (Ax=b) (Total, Max)        5.02709e-13  2.66454e-14
 // MILP x bound error (Total, Max)                0.00000e+00  0.00000e+00
 // MILP x integrality error (Total, Max)          0.00000e+00  0.00000e+00
 // MILP slack bound error (Total, Max)            0.00000e+00  0.00000e+00
@@ -10,8 +10,19 @@
 
 x = [[1]
              [0]
+             [1]
              [0]
              [0]
+             [0]
+             [1]
+             [0]
+             [0]
+             [0]
+             [0]
+             [0]
+             [0]
+             [0]
+             [1]
              [0]
              [0]
              [0]
@@ -22,28 +33,17 @@ x = [[1]
              [0]
              [0]
              [1]
-             [0]
-             [0]
-             [0]
-             [0]
-             [0]
-             [1]
-             [0]
-             [0]
-             [1]
-             [0]
-             [0]
              [0]
              [0]
              [0]
              [0]
              [0]];
 T = [[0]
-             [0]
-             [0]
-             [0]
-             [0]
-             [0]];
+             [2]
+             [8]
+             [7]
+             [12]
+             [18.472]];
 DL = [[0]
              [0]
              [0]
@@ -51,8 +51,8 @@ DL = [[0]
              [0]
              [0]];
 Q = [[0]
+             [3]
+             [8]
              [0]
-             [0]
-             [0]
-             [0]
-             [0]];
+             [5]
+             [10]];

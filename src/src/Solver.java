@@ -237,7 +237,7 @@ public class Solver {
         }
     }
 
-    private List<List<Integer>> constructRoute() {
+    public List<List<Integer>> constructRoute() {
         List<List<Integer>> routes = new LinkedList<>();
         for (int k = 0; k < K; k++) {
             routes.add(constructRoute(k));
@@ -265,9 +265,9 @@ public class Solver {
         return route;
     }
 
-    public void displaySolution() {
+    public void displaySolution(String filename) {
         List<List<Integer>> routes = constructRoute();
-        File file = new File("RouteInfo.txt");
+        File file = new File(filename);
         BufferedWriter bufferedWriter = null;
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -279,7 +279,7 @@ public class Solver {
         }
         StringBuilder sb = new StringBuilder();
         for (int k = 0; k < routes.size(); k++) {
-            sb.append("Vehicle ").append(k);
+            sb.append("Vehicle ").append(k).append("\n");
             List<Integer> route = routes.get(k);
             for (int i = 0; i < route.size(); i++) {
                 int node = route.get(i);
@@ -293,6 +293,9 @@ public class Solver {
                         .append("]").append("\n");
                 sb.append("\t\t\tLoad at node ").append(nodes[node].getQ()).append("\n");
                 sb.append("\t\t\tService time at node ").append(nodes[node].getS()).append("\n");
+                if (i != route.size() - 1) {
+                    sb.append("\tCost between ").append(distance(node, route.get(i + 1))).append("\n");
+                }
             }
             System.out.println(sb.toString());
             try {
@@ -302,5 +305,53 @@ public class Solver {
                 e.printStackTrace();
             }
         }
+    }
+
+    private double distance(int from, int to) {
+        return Math.sqrt((X[from] - X[to]) * (X[from] - X[to]) + (Y[from] - Y[to]) * (Y[from] - Y[to]));
+    }
+
+    public int getK() {
+        return K;
+    }
+
+    public int getN() {
+        return N;
+    }
+
+    public int[] getCapacity() {
+        return capacity;
+    }
+
+    public Node[] getNodes() {
+        return nodes;
+    }
+
+    public int[] getX() {
+        return X;
+    }
+
+    public int[] getY() {
+        return Y;
+    }
+
+    public int[] getMembership() {
+        return membership;
+    }
+
+    public double[][] getDL() {
+        return DL;
+    }
+
+    public double[][] getQ() {
+        return Q;
+    }
+
+    public double[][] getT() {
+        return T;
+    }
+
+    public int[][][] getx() {
+        return x;
     }
 }
