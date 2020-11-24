@@ -1,0 +1,120 @@
+Vehicle 0 with capacity 100
+	Node 0
+		Load 0.0
+		Time 12.615223689149829
+		Delay 0.0
+			Time Window [0, 1150]
+			Load at node 0
+			Service time at node 0
+		Actual Load 0.0
+		Actual Start Time 0.0
+	Cost between 10.44030650891055
+	Node 5
+		Load 10.0
+		Time 25.0
+		Delay 0.0
+			Time Window [25, 105]
+			Load at node 10
+			Service time at node 90
+		Actual Load 10.0
+		Actual Start Time 25.0
+	Cost between 5.830951894845301
+	Node 2
+		Load 39.99999999999994
+		Time 138.0
+		Delay 0.0
+			Time Window [138, 320]
+			Load at node 30
+			Service time at node 90
+		Actual Load 40.0
+		Actual Start Time 138.0
+	Cost between 7.280109889280518
+	Node 1
+		Load 49.99999999999994
+		Time 235.28010988927963
+		Delay 9.280109889279629
+			Time Window [31, 226]
+			Load at node 10
+			Service time at node 90
+		Actual Load 50.0
+		Actual Start Time 235.2801098892805
+	Cost between 13.0
+	Node 4
+		Load 79.99999999999994
+		Time 338.28010988927963
+		Delay 0.0
+			Time Window [317, 550]
+			Load at node 30
+			Service time at node 90
+		Actual Load 80.0
+		Actual Start Time 338.28010988928054
+	Cost between 5.830951894845301
+	Node 7
+		Load 49.99999999999994
+		Time 434.1110617841241
+		Delay 0.0
+			Time Window [358, 528]
+			Load at node -30
+			Service time at node 90
+		Actual Load 50.0
+		Actual Start Time 434.11106178412587
+	Cost between 6.324555320336759
+	Node 3
+		Load 59.99999999999994
+		Time 530.4356171044601
+		Delay 0.0
+			Time Window [337, 595]
+			Load at node 10
+			Service time at node 90
+		Actual Load 60.0
+		Actual Start Time 530.4356171044626
+	Cost between 3.605551275463989
+	Node 9
+		Load 29.999999999999943
+		Time 624.0411683799248
+		Delay 0.0
+			Time Window [561, 721]
+			Load at node -30
+			Service time at node 90
+		Actual Load 30.0
+		Actual Start Time 624.0411683799266
+	Cost between 18.439088914585774
+	Node 6
+		Load 19.999999999999943
+		Time 732.48025729451
+		Delay 187.48025729451
+			Time Window [313, 545]
+			Load at node -10
+			Service time at node 90
+		Actual Load 20.0
+		Actual Start Time 732.4802572945124
+	Cost between 12.36931687685298
+	Node 8
+		Load 9.999999999999943
+		Time 834.8495741713632
+		Delay 15.849574171363201
+			Time Window [569, 819]
+			Load at node -10
+			Service time at node 90
+		Actual Load 10.0
+		Actual Start Time 834.8495741713654
+	Cost between 12.806248474865697
+	Node 10
+		Load 0.0
+		Time 937.6558226462294
+		Delay 0.0
+			Time Window [800, 960]
+			Load at node -10
+			Service time at node 90
+		Actual Load 0.0
+		Actual Start Time 937.6558226462311
+	Cost between 25.079872407968907
+	Node 11
+		Load 0.0
+		Time 1052.735695054198
+		Delay 0.0
+			Time Window [0, 1150]
+			Load at node 0
+			Service time at node 0
+		Actual Load 0.0
+		Actual Start Time 1052.7356950541998

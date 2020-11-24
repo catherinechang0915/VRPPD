@@ -18,20 +18,94 @@ public class DataGenerator {
      */
     public DataGenerator(String type, String inputFileName, String outputFileName) {
         switch (type) {
-            case "fixed": // fixed multi-vehicle example for debug use
-                generateFixed(outputFileName);
             case "toy":
-                generateToy(outputFileName);
+                generateSmall(inputFileName, outputFileName, 5, 3);
                 break;
-            case "benchmark":
-                // TODO: modification of solomon benchmark for PD problem
+            case "benchmarkSmall":
+                generateSmall(inputFileName, outputFileName, 51, 3);
                 break;
+            default:
+                System.out.println("No such type.");
         }
     }
 
-    public void generateToy(String outputFileName) {
-        // TODO
+    public void generateSmall(String inputFileName, String outputFileName, int n, int K) {
+        String DIR = "C:\\Users\\cathe\\Desktop\\FYP\\TSP\\Li and Lim test cases\\pdp_100\\";
+
+        Node[] nodes = new Node[2 * n + 2];
+        int[] X = new int[2 * n + 2];
+        int[] Y = new int[2 * n + 2];
+        try {
+            FileInputStream fileInputStream = new FileInputStream(new File(DIR + inputFileName));
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            int Q = Integer.parseInt(bufferedReader.readLine().split("\\s+")[1]);
+            int[] capacity = new int[K];
+            Arrays.fill(capacity, Q);
+
+            String[] depot = bufferedReader.readLine().split("\\s+");
+            X[0] = Integer.parseInt(depot[1]);
+            Y[0] = Integer.parseInt(depot[2]);
+            nodes[0] = new Node(Integer.parseInt(depot[3]),
+                    Integer.parseInt(depot[4]),
+                    Integer.parseInt(depot[5]),
+                    Integer.parseInt(depot[6]));
+            X[2 * n + 1] = Integer.parseInt(depot[1]);
+            Y[2 * n + 1] = Integer.parseInt(depot[2]);
+            nodes[2 * n + 1] = new Node(Integer.parseInt(depot[3]),
+                    Integer.parseInt(depot[4]),
+                    Integer.parseInt(depot[5]),
+                    Integer.parseInt(depot[6]));
+
+            String[] nodeInfo = new String[102 + 1]; // nodeInfo 0 dummy
+            for (int i = 1; i <= 102; i++) {
+                nodeInfo[i] = bufferedReader.readLine();
+            }
+            String[] node;
+            int p, d, sib, x1, y1, x2, y2;
+            for (int i = 1; i <= n; i++) {
+                node = nodeInfo[i].split("\\s+");
+                Node node1 = new Node(Integer.parseInt(node[3]),
+                        Integer.parseInt(node[4]),
+                        Integer.parseInt(node[5]),
+                        Integer.parseInt(node[6]));
+                x1 = Integer.parseInt(node[1]);
+                y1 = Integer.parseInt(node[2]);
+                p = Integer.parseInt(node[7]);
+                d = Integer.parseInt(node[8]);
+                sib = p == 0 ? d : p;
+                node = nodeInfo[sib].split("\\s+");
+                Node node2 = new Node(Integer.parseInt(node[3]),
+                        Integer.parseInt(node[4]),
+                        Integer.parseInt(node[5]),
+                        Integer.parseInt(node[6]));
+                y2 = Integer.parseInt(node[2]);
+                x2 = Integer.parseInt(node[1]);
+                if (p == 0) {
+                    nodes[i] = node1;
+                    nodes[i + n] = node2;
+                    X[i] = x1;
+                    Y[i] = y1;
+                    X[i + n] = x2;
+                    Y[i + n] = y2;
+                } else {
+                    nodes[i + n] = node1;
+                    nodes[i] = node2;
+                    X[i] = x2;
+                    Y[i] = y2;
+                    X[i + n] = x1;
+                    Y[i + n] = y1;
+                }
+            }
+            int[] membership = new int[2 * n + 2];
+            Arrays.fill(membership, 1);
+            writeToFile(outputFileName, n, K, capacity, nodes, X, Y, membership);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 
     public void generateFixed(String outputFileName) {
         int n = 4;
@@ -52,7 +126,7 @@ public class DataGenerator {
         X[4] = 19; Y[4] = 18;
         X[3 + n] = 21; Y[3 + n] = 17;
         X[4 + n] = 23; Y[4 + n] = 19;
-        double[] capacity = new double[] {10, 10, 10};
+        int[] capacity = new int[] {10, 10, 10};
         int[] membership = new int[2 * n + 2];
         Arrays.fill(membership, 1);
         Node[] nodes = new Node[2 * n + 2];
@@ -66,7 +140,7 @@ public class DataGenerator {
         writeToFile(outputFileName, n, K, capacity, nodes, X, Y, membership);
     }
 
-    public void writeToFile(String outputFileName, int n, int K, double[] capacity, Node[] nodes,
+    public void writeToFile(String outputFileName, int n, int K, int[] capacity, Node[] nodes,
                             int[] X, int[] Y, int[] membership) {
         File fileOPL = new File(WORKDIR + outputFileName);
         File fileData = new File("data\\" + outputFileName);

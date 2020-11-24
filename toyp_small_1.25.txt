@@ -1,0 +1,96 @@
+Vehicle 0 with capacity 100
+	Node 0
+		Load 0.0
+		Time 16.433976887692552
+		Delay 0.0
+			Time Window [0, 1150]
+			Load at node 0
+			Service time at node 0
+	Cost between 15.132745950421556
+	Node 5
+		Load 10.0
+		Time 31.566722838113492
+		Delay 0.0
+			Time Window [25, 185]
+			Load at node 10
+			Service time at node 90
+	Cost between 5.830951894845301
+	Node 2
+		Load 40.0
+		Time 127.39767473295797
+		Delay 0.0
+			Time Window [88, 160]
+			Load at node 30
+			Service time at node 90
+	Cost between 8.602325267042627
+	Node 1
+		Load 49.999999999
+		Time 226.0
+		Delay 0.0
+			Time Window [131, 226]
+			Load at node 10
+			Service time at node 90
+	Cost between 12.806248474865697
+	Node 4
+		Load 79.99999999900001
+		Time 328.80624847486615
+		Delay 0.0
+			Time Window [317, 430]
+			Load at node 30
+			Service time at node 90
+	Cost between 5.830951894845301
+	Node 7
+		Load 49.99999999900001
+		Time 424.6372003697106
+		Delay 0.0
+			Time Window [388, 548]
+			Load at node -30
+			Service time at node 90
+	Cost between 16.76305461424021
+	Node 9
+		Load 19.99999999600003
+		Time 561.0
+		Delay 0.0
+			Time Window [561, 621]
+			Load at node -30
+			Service time at node 90
+	Cost between 3.605551275463989
+	Node 3
+		Load 29.999999995000028
+		Time 654.6055512754647
+		Delay 0.0
+			Time Window [617, 695]
+			Load at node 10
+			Service time at node 90
+	Cost between 26.0
+	Node 10
+		Load 19.999999994000024
+		Time 770.6055512754647
+		Delay 0.0
+			Time Window [700, 860]
+			Load at node -10
+			Service time at node 90
+	Cost between 15.620499351813308
+	Node 8
+		Load 9.99999999300002
+		Time 876.2260506252778
+		Delay 0.0
+			Time Window [819, 979]
+			Load at node -10
+			Service time at node 90
+	Cost between 39.05124837953327
+	Node 6
+		Load 0.0
+		Time 1005.2772990048115
+		Delay 132.27729900481154
+			Time Window [713, 873]
+			Load at node -10
+			Service time at node 90
+	Cost between 51.478150704935004
+	Node 11
+		Load 0.0
+		Time 1146.7554497077476
+		Delay 0.0
+			Time Window [0, 1150]
+			Load at node 0
+			Service time at node 0

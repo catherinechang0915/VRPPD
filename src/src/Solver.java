@@ -15,7 +15,7 @@ public class Solver {
 
     private int N;
     private int K;
-    private double[] capacity;
+    private int[] capacity;
     private Node[] nodes;
     private int[] X;
     private int[] Y;
@@ -115,14 +115,14 @@ public class Solver {
                 }
 
                 // set capacity
-                capacity = new double[K];
+                capacity = new int[K];
                 text = bufferedReader.readLine();
                 patten = Pattern.compile("capacity = \\[(.*)];");
                 matcher = patten.matcher(text);
                 if (matcher.find()) {
                     String[] c = matcher.group(1).split(",");
                     for (int i = 0; i < K; i++) {
-                        capacity[i] = Double.parseDouble(c[i]);
+                        capacity[i] = Integer.parseInt(c[i]);
                     }
                 } else {
                     throw new IllegalArgumentException("Wrong capacity.");
@@ -275,6 +275,8 @@ public class Solver {
      * @param filename output filename
      */
     public void displaySolution(String filename) {
+        double objVal = 0;
+        int alpha = 3, beta = 1;
         List<List<Integer>> routes = constructRoute();
         File file = new File(filename);
         if (file.exists()) file.delete();
@@ -291,11 +293,14 @@ public class Solver {
         for (int k = 0; k < routes.size(); k++) {
             sb.append("Vehicle ").append(k).append(" with capacity ").append(capacity[k]).append("\n");
             List<Integer> route = routes.get(k);
+            double currQ = 0;
+            double currT = 0;
             for (int i = 0; i < route.size(); i++) {
                 int node = route.get(i);
                 sb.append("\tNode ").append(node).append("\n");
                 sb.append("\t\tLoad ").append(Q[node][k]).append("\n");
                 sb.append("\t\tTime ").append(T[node][k]).append("\n");
+                objVal += beta * Math.max(0, T[node][k] - nodes[node].getTw2()); // penalty
                 sb.append("\t\tDelay ").append(DL[node][k]).append("\n");
                 sb.append("\t\t\tTime Window [").append(nodes[node].getTw1())
                         .append(", ")
@@ -303,12 +308,18 @@ public class Solver {
                         .append("]").append("\n");
                 sb.append("\t\t\tLoad at node ").append(nodes[node].getQ()).append("\n");
                 sb.append("\t\t\tService time at node ").append(nodes[node].getS()).append("\n");
+                currQ += nodes[node].getQ();
+                sb.append("\t\tActual Load ").append(currQ).append("\n");
+                sb.append("\t\tActual Start Time ").append(currT).append("\n");
                 if (i != route.size() - 1) {
                     sb.append("\tCost between ").append(distance(node, route.get(i + 1))).append("\n");
+                    currT = Math.max(nodes[route.get(i + 1)].getTw1(), currT + distance(node, route.get(i + 1))
+                            + nodes[node].getS());
+                    objVal += alpha * distance(node, route.get(i + 1));
                 }
             }
         }
-        System.out.println(sb.toString());
+        System.out.println(objVal);
         try {
             bufferedWriter.write(sb.toString());
             bufferedWriter.flush();
@@ -329,7 +340,7 @@ public class Solver {
         return N;
     }
 
-    public double[] getCapacity() {
+    public int[] getCapacity() {
         return capacity;
     }
 
