@@ -9,7 +9,10 @@ import java.util.regex.*;
 
 public class Solver {
 
-    private final String WORKDIR = "C:\\Users\\cathe\\opl\\VRP";
+    private final String CURRDIR = "C:\\Users\\cathe\\Documents\\Workspace\\VRPPD\\";
+    private final String WORKDIR = "C:\\Users\\cathe\\opl\\VRP\\";
+    private final String DATADIR = "src\\data\\";
+    private final String RESDIR = "src\\res\\opl\\";
     private IloOplFactory oplF;
     private IloOplModel opl;
 
@@ -26,25 +29,29 @@ public class Solver {
     private double[][] Q;
     private double[][] DL;
 
+    public Solver (String dataFilePath) {
+        this("VRP", dataFilePath);
+    }
+
     /**
      * Solve the model with OPL
      * @param modelFilePath specifies the file name for .mod file (including .mod)
      * @param dataFilePath specifies the file name for .dat file (including .dat)
      */
     public Solver (String modelFilePath, String dataFilePath) {
-        readParam(WORKDIR + "\\" + dataFilePath);
+        readParam(DATADIR + dataFilePath);
         int status = 127;
         try {
             IloOplFactory.setDebugMode(true);
             oplF = new IloOplFactory();
             IloOplErrorHandler errHandler = oplF.createOplErrorHandler();
-            IloOplModelSource modelSource = oplF.createOplModelSource(WORKDIR + "\\" + modelFilePath);
+            IloOplModelSource modelSource = oplF.createOplModelSource(WORKDIR + modelFilePath + ".mod");
             IloOplSettings settings = oplF.createOplSettings(errHandler);
             IloOplModelDefinition def = oplF.createOplModelDefinition(modelSource, settings);
             IloCplex cplex = oplF.createCplex();
             cplex.setOut(null);
             opl = oplF.createOplModel(def, cplex);
-            IloOplDataSource dataSource = oplF.createOplDataSource(WORKDIR + "\\" + dataFilePath);
+            IloOplDataSource dataSource = oplF.createOplDataSource(DATADIR + dataFilePath + ".dat");
             opl.addDataSource(dataSource);
             opl.generate();
             if (cplex.solve()) {
@@ -53,7 +60,7 @@ public class Solver {
                 setParam();
                 opl.postProcess();
                 // save to file
-                File file =  new File("VRP.txt");
+                File file =  new File(RESDIR + dataFilePath + ".txt");
                 opl.printSolution(new FileOutputStream(file));
             } else {
                 System.out.println("No solution!");
