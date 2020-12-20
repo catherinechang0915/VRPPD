@@ -1,5 +1,7 @@
 package src.DataStructures;
 
+import javafx.util.Pair;
+
 import java.util.List;
 
 /**
@@ -15,9 +17,16 @@ public class Route {
     public Route(List<Node> route, Vehicle vehicle, double dist, double penalty) {
         this.route = route;
         this.vehicle = vehicle;
-        this.dist = dist;
-        this.penalty = penalty;
     }
+
+//    public void updateObjective(double[][] distanceMatrix) {
+//        for (int i = 0; i < route.size(); i++) {
+//            if (i != route.size() - 1) {
+//                dist += distanceMatrix[route.get(i).getIndex()][route.get(i + 1).getIndex()];
+//            }
+//            penalty += route.get(i).getDL();
+//        }
+//    }
 
     public String trace() {
         StringBuilder sb = new StringBuilder();

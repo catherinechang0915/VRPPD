@@ -32,11 +32,11 @@ public class Node {
     }
 
     public Node(int index, int q, int tw1, int tw2, int s) {
-        this(index, q, tw1, tw2, s, -1, -1, -1, -1, -1,-1);
+        this(index, q, tw1, tw2, s, -1, -1, -1, 0, 0,0);
     }
 
-    public Node(int q, int tw1, int tw2, int s, int x, int y, int membership) {
-        this(-1, q, tw1, tw2, s, x, y, membership, -1, -1, -1);
+    public Node(int q, int tw1, int tw2, int s, int x, int y) {
+        this(-1, q, tw1, tw2, s, x, y, -1, 0, 0, 0);
     }
 
     public Node(Node node) {

@@ -1,4 +1,4 @@
-n = 5;
+N = 5;
 K = 1;
 capacity = [100];
 nodeInfo = [

@@ -9,24 +9,32 @@ public class Main {
     public static void main(String[] args) {
 
         int n = 20;
-        int memberPercent = 1;
+        double memberPercent = 0.6;
         int alpha = 1;
         int beta = 1;
 
 //        DataGenerator gen = new DataGenerator(n, memberPercent, alpha, beta);
 
-        String dataDir = "data\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
+        String dataDir = "data\\pdp_" + n + "_mem_" + memberPercent + "_validation\\" + alpha + "_" + beta + "\\";
         String resDirOPL = "res\\opl\\pdp_" + n + "_mem_" + memberPercent + "_validation\\" + alpha + "_" + beta + "\\";
         String resDirHEU = "res\\heuristics\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
+//
+//        List<String> files = Utils.fileListNoExtension(dataDir);
+//
+//        for (String filename : files) {
+//            InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
+//            Solver solver = new Solver(inputParam, dataDir, filename);
+//            solver.solve();
+//            solver.validateAndSaveToFile(resDirOPL, filename);
+////            Visualizer visualizer = new Visualizer(solver.getSolution());
+//        }
 
-        List<String> files = Utils.fileList(dataDir);
+        String filename = "lc101";
 
-        for (String filename : files) {
-            InputParam inputParam = Utils.readParam(dataDir + filename);
-            Solver solver = new Solver(inputParam, dataDir, filename);
-            solver.solve();
-            solver.validateAndSaveToFile(resDirOPL, filename);
-            Visualizer visualizer = new Visualizer(solver);
-        }
+        InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
+        MySolver mySolver = new MySolver(inputParam);
+        Solution sol = mySolver.initialSolutionConstruction();
+        System.out.println(sol);
+        Visualizer visualizer = new Visualizer(sol);
     }
 }

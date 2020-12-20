@@ -63,11 +63,9 @@ public class Solver {
                 opl.postProcess();
                 // calculate detailed routes solution
                 solution = constructSolution(elasped);
-
             } else {
                 System.out.println("No solution!");
             }
-            oplF.end();
             status = 0;
         } catch (IloOplException ex) {
             System.err.println("### OPL exception: " + ex.getMessage());
@@ -95,7 +93,8 @@ public class Solver {
     public void validateAndSaveToFile(String resDir, String dataFilename) {
         try {
             // save to file
-            File file = new File(resDir + dataFilename + ".txt");
+            File file = Utils.createFile(resDir + dataFilename + ".txt");
+
             opl.printSolution(new FileOutputStream(file));
 
             Utils.writeToFile(solution.toString(), resDir + dataFilename + "_calculated.txt");
@@ -107,6 +106,9 @@ public class Solver {
                         + getTrace();
                 Utils.writeToFile(content, resDir + dataFilename + "_diff.txt");
             }
+
+            oplF.end();
+
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);

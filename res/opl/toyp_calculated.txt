@@ -1,7 +1,7 @@
 Objective Value: 575.6308017290255
 Total Distance Traveled: 121.00695345795576
 Total Penalty of Delay: 212.6099413551583
-Time Elasped: 76
+Time Elasped: 88
 Vehicle 0 with capacity 100
 	Node 0
 		Load 0.0

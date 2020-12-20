@@ -1,5 +1,6 @@
 package src;
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import src.DataStructures.*;
 
 import java.io.*;
@@ -204,14 +205,12 @@ public class Utils {
             while ((line = bufferedReader.readLine()) != null) {
                 text = line.split("\\s+");
                 int index = Integer.parseInt(text[0]);
-                int membership = Math.random() < memberPercent ? 1 : 0;
                 unsortedNodes.add(new Node(Integer.parseInt(text[3]),
                         Integer.parseInt(text[4]),
                         Integer.parseInt(text[5]),
                         Integer.parseInt(text[6]),
                         Integer.parseInt(text[1]),
-                        Integer.parseInt(text[2]),
-                        membership));
+                        Integer.parseInt(text[2])));
                 // int p = Integer.parseInt(text[7]);
                 int d = Integer.parseInt(text[8]);
                 if (d != 0) {
@@ -230,12 +229,18 @@ public class Utils {
             // depots
             nodes[0] = unsortedNodes.get(0);
             nodes[2 * N + 1] = new Node(unsortedNodes.get(0));
+            nodes[0].setMembership(1);
+            nodes[0].setMembership(1);
 
             // internal pd-pairs
             int index = 1;
             for (int p : pdPair.keySet()) {
+                int membership = Math.random() < memberPercent ? 1 : 0;
                 nodes[index + N] = unsortedNodes.get(pdPair.get(p));
-                nodes[index++] = unsortedNodes.get(p);
+                nodes[index] = unsortedNodes.get(p);
+                nodes[index + N].setMembership(membership);
+                nodes[index].setMembership(membership);
+                index++;
                 if (index == N + 1) break; // when not all pairs are used
             }
 
@@ -323,6 +328,10 @@ public class Utils {
                 sb.append("];\n");
             }
         }
+
+        sb.append("alpha = ").append(inputParam.getAlpha()).append(";\n");
+        sb.append("beta = ").append(inputParam.getBeta()).append(";\n");
+
         try {
             bufferedWriter.write(sb.toString());
             bufferedWriter.flush();
@@ -338,19 +347,39 @@ public class Utils {
      */
     public static List<String> fileList(String dirPath) {
         File folder = new File(dirPath);
-        if (!folder.exists() || !folder.isDirectory()) return null;
-
-        File[] listOfFiles = folder.listFiles();
-        if (listOfFiles == null) return null;
-
         List<String> files = new LinkedList<>();
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                files.add(listOfFiles[i].getName());
+        try {
+            File[] listOfFiles = folder.listFiles();
+            for (int i = 0; i < listOfFiles.length; i++) {
+                if (listOfFiles[i].isFile()) {
+                    files.add(listOfFiles[i].getName());
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
         return files;
     }
+
+    public static List<String> fileListNoExtension(String dirPath) {
+        File folder = new File(dirPath);
+        List<String> files = new LinkedList<>();
+        try {
+            File[] listOfFiles = folder.listFiles();
+            for (int i = 0; i < listOfFiles.length; i++) {
+                if (listOfFiles[i].isFile()) {
+                    files.add(listOfFiles[i].getName().split("\\.")[0]);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return files;
+    }
+
+
 
     /**
      * create a directory if not exists
@@ -361,6 +390,28 @@ public class Utils {
         if (!directory.exists()){
             directory.mkdirs();
         }
+    }
+
+    /**
+     * create file and recursively create parent directories if not exist
+     * @param filePath
+     * @return file
+     */
+    public static File createFile(String filePath) {
+        File file = new File(filePath);
+        try {
+            File parent = file.getParentFile();
+            if (!parent.exists()) {
+                parent.mkdirs();
+            }
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return file;
     }
 
     /**

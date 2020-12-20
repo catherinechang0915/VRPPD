@@ -46,10 +46,9 @@ public class DataGenerator {
             if (!file.equals("vehicle.txt")) {
                 generateFile(n, kMap.get(file), memberPercent, alpha, beta,
                         inputDir + file, outputDir + file.substring(0, file.length() - 4) + ".dat");
+//                generateFile(n, -1, memberPercent, alpha, beta,
+//                        inputDir + file, outputDir + file.substring(0, file.length() - 4) + ".dat");
             }
-
-//            generateFile(n, -1, memberPercent, alpha, beta,
-//                    inputDir + file, outputDir + file.substring(0, file.length() - 4) + ".dat");
         }
     }
 

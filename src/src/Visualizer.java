@@ -9,19 +9,17 @@ import java.util.List;
 
 public class Visualizer{
 
-    public Visualizer(Solver solver) {
-        JFrame frame = new MyFrame(solver);
+    public Visualizer(Solution solution) {
+        JFrame frame = new MyFrame(solution);
         frame.setVisible(true);
     }
 
     public class MyFrame extends JFrame {
 
-        Solver solver;
         Solution solution;
 
-        public MyFrame(Solver solver) {
-            this.solver = solver;
-            this.solution = solver.getSolution();
+        public MyFrame(Solution solution) {
+            this.solution = solution;
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setTitle("Routes Visualization");
             setSize(1000,1000);

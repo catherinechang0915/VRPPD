@@ -36,7 +36,6 @@ public class InputParam {
         int len = nodes.length;
         int n = (len - 2) / 2;
         double[][] distanceMatrix = new double[len][len];
-        distanceMatrix[0][len - 1] = calculateDistance(nodes[0], nodes[len - 1]);
         for (int i = 0; i < nodes.length; i++) {
             for (int j = 0; j < nodes.length; j++) {
                 if (i != j) {
@@ -52,6 +51,7 @@ public class InputParam {
                 }
             }
         }
+        distanceMatrix[0][len - 1] = calculateDistance(nodes[0], nodes[len - 1]);
         return distanceMatrix;
     }
 

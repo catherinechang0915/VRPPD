@@ -13,7 +13,11 @@ public class Solution {
 
     public Solution() {
         sol = new LinkedList<>();
-        timeElapsed = 0;
+        timeElapsed = -1;
+    }
+
+    public Solution(List<Route> sol, double totalDist, double totalPenalty, double objective) {
+        this(sol, -1, totalDist, totalPenalty, objective);
     }
 
     public Solution(List<Route> sol, long timeElapsed, double totalDist, double totalPenalty, double objective) {
