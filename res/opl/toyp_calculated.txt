@@ -1,0 +1,102 @@
+Objective Value: 575.6308017290255
+Total Distance Traveled: 121.00695345795576
+Total Penalty of Delay: 212.6099413551583
+Time Elasped: 76
+Vehicle 0 with capacity 100
+	Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 1150]
+			Load at node 0
+			Service time at node 0
+	Node 5
+		Load 10.0
+		Time 25.0
+		Delay 0.0
+			Membership 1
+			Time Window [25, 105]
+			Load at node 10
+			Service time at node 90
+	Node 2
+		Load 40.0
+		Time 138.0
+		Delay 0.0
+			Membership 1
+			Time Window [138, 320]
+			Load at node 30
+			Service time at node 90
+	Node 1
+		Load 50.0
+		Time 235.28010988928054
+		Delay 9.280109889280538
+			Membership 0
+			Time Window [31, 226]
+			Load at node 10
+			Service time at node 90
+	Node 4
+		Load 80.0
+		Time 338.28010988928054
+		Delay 0.0
+			Membership 1
+			Time Window [317, 550]
+			Load at node 30
+			Service time at node 90
+	Node 7
+		Load 50.0
+		Time 434.1110617841258
+		Delay 0.0
+			Membership 1
+			Time Window [358, 528]
+			Load at node -30
+			Service time at node 90
+	Node 3
+		Load 60.0
+		Time 530.4356171044626
+		Delay 0.0
+			Membership 0
+			Time Window [337, 595]
+			Load at node 10
+			Service time at node 90
+	Node 9
+		Load 30.0
+		Time 624.0411683799266
+		Delay 0.0
+			Membership 1
+			Time Window [561, 721]
+			Load at node -30
+			Service time at node 90
+	Node 6
+		Load 20.0
+		Time 732.4802572945124
+		Delay 187.4802572945124
+			Membership 0
+			Time Window [313, 545]
+			Load at node -10
+			Service time at node 90
+	Node 8
+		Load 10.0
+		Time 834.8495741713654
+		Delay 15.849574171365362
+			Membership 0
+			Time Window [569, 819]
+			Load at node -10
+			Service time at node 90
+	Node 10
+		Load 0.0
+		Time 937.6558226462311
+		Delay 0.0
+			Membership 1
+			Time Window [800, 960]
+			Load at node -10
+			Service time at node 90
+	Node 11
+		Load 0.0
+		Time 1052.7356950542
+		Delay 0.0
+			Membership 1
+			Time Window [0, 1150]
+			Load at node 0
+			Service time at node 0
+

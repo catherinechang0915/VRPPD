@@ -1,0 +1,14 @@
+vehicle 1:
+travel from 0 to 5 travels 10.440306509
+travel from 1 to 4 travels 13
+travel from 2 to 1 travels 7.280109889
+travel from 3 to 9 travels 3.605551275
+travel from 4 to 7 travels 5.830951895
+travel from 5 to 2 travels 5.830951895
+travel from 6 to 8 travels 12.369316877
+travel from 7 to 3 travels 6.32455532
+travel from 8 to 10 travels 12.806248475
+travel from 9 to 6 travels 18.439088915
+travel from 10 to 11 travels 25.079872408
+objective part 1 121.006953458 363.020860374
+objective part 2 212.609941355 212.609941355
