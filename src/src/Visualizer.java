@@ -1,5 +1,7 @@
 package src;
 
+import src.DataStructures.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.Color;
@@ -15,15 +17,11 @@ public class Visualizer{
     public class MyFrame extends JFrame {
 
         Solver solver;
-        int[] X;
-        int[] Y;
-        List<List<Integer>> routes;
+        Solution solution;
 
         public MyFrame(Solver solver) {
             this.solver = solver;
-            this.X = solver.getX();
-            this.Y = solver.getY();
-            this.routes = solver.constructRoute();
+            this.solution = solver.getSolution();
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setTitle("Routes Visualization");
             setSize(1000,1000);
@@ -33,6 +31,7 @@ public class Visualizer{
         }
 
         public void paint(Graphics g) {
+            List<Route> routes = solution.getRoutes();
             for (int k = 0; k < routes.size(); k++) {
                 paintRoute(g, routes.get(k),
                         new Color((int)(Math.random()*256), (int)(Math.random()*256), (int)(Math.random()*256)),
@@ -47,13 +46,15 @@ public class Visualizer{
          * @param color random color
          * @param scale enlarge/shrink the distance between nodes
          */
-        private void paintRoute(Graphics g, List<Integer> route, Color color, int scale) {
+        private void paintRoute(Graphics g, Route route, Color color, int scale) {
+            List<Node> nodes = route.getNodes();
             g.setColor(color);
-            for (int i = 0; i < route.size(); i++) {
-                int node = route.get(i);
-                g.fillRect(X[node]*scale - 1, Y[node]*scale - 1, 2, 2);
-                if (i != route.size() - 1) {
-                    g.drawLine(X[node]*scale, Y[node]*scale, X[route.get(i + 1)]*scale, Y[route.get(i + 1)]*scale);
+            for (int i = 0; i < nodes.size(); i++) {
+                Node node = nodes.get(i);
+                g.fillRect(node.getX()*scale - 1, node.getY()*scale - 1, 2, 2);
+                if (i != nodes.size() - 1) {
+                    g.drawLine(node.getX()*scale, node.getY()*scale,
+                            nodes.get(i+1).getX()*scale, nodes.get(i+1).getY()*scale);
                 }
             }
         }

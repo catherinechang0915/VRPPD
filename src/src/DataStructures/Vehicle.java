@@ -1,4 +1,4 @@
-package src;
+package src.DataStructures;
 
 public class Vehicle {
 

@@ -1,5 +1,8 @@
-package src;
+package src.DataStructures;
 
+/**
+ * Equivalent to OPL output decision variables
+ */
 public class OutputParam {
 
     private int[][][] x;

@@ -1,67 +1,69 @@
 package src;
 
+import src.DataStructures.*;
+
 import ilog.concert.*;
 import ilog.opl.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.*;
 
 public class Solver {
 
-    private final String CURRDIR = "C:\\Users\\cathe\\Documents\\Workspace\\VRPPD\\";
-    private final String WORKDIR = "C:\\Users\\cathe\\opl\\VRP\\";
-    private final String DATADIR = "src\\data\\";
-    private final String RESDIR = "src\\res\\opl\\";
+    private static final String WORKDIR = "src\\";
     private IloOplFactory oplF;
     private IloOplModel opl;
+    private IloCplex cplex;
 
-    private int N;
-    private int K;
-    private int[] capacity;
-    private Node[] nodes;
-    private int[] X;
-    private int[] Y;
-    private int[] membership;
+    InputParam inputParam;
+    OutputParam outputParam;
+    Solution solution;
 
-    private int[][][] x;
-    private double[][] T;
-    private double[][] Q;
-    private double[][] DL;
-
-    public Solver (String dataFilePath) {
-        this("VRP", dataFilePath);
+    public Solver (InputParam inputParam, String dataDir, String dataFilename) {
+        this(inputParam, WORKDIR, "VRP", dataDir, dataFilename);
     }
 
     /**
-     * Solve the model with OPL
-     * @param modelFilePath specifies the file name for .mod file (including .mod)
-     * @param dataFilePath specifies the file name for .dat file (including .dat)
+     * Set OPL solver with proper .mod and .dat file
+     * @param inputParam parameter object read from the .dat file
+     * @param modelDir .mod directory path
+     * @param modelFilename .mod filename
+     * @param dataDir .dat directory path
+     * @param dataFilename .dat filename
      */
-    public Solver (String modelFilePath, String dataFilePath) {
-        readParam(DATADIR + dataFilePath);
-        int status = 127;
+    public Solver (InputParam inputParam, String modelDir, String modelFilename,
+                   String dataDir, String dataFilename) {
+        this.inputParam = inputParam;
         try {
             IloOplFactory.setDebugMode(true);
             oplF = new IloOplFactory();
             IloOplErrorHandler errHandler = oplF.createOplErrorHandler();
-            IloOplModelSource modelSource = oplF.createOplModelSource(WORKDIR + modelFilePath + ".mod");
+            IloOplModelSource modelSource = oplF.createOplModelSource(modelDir + modelFilename + ".mod");
             IloOplSettings settings = oplF.createOplSettings(errHandler);
             IloOplModelDefinition def = oplF.createOplModelDefinition(modelSource, settings);
-            IloCplex cplex = oplF.createCplex();
+            cplex = oplF.createCplex();
             cplex.setOut(null);
             opl = oplF.createOplModel(def, cplex);
-            IloOplDataSource dataSource = oplF.createOplDataSource(DATADIR + dataFilePath + ".dat");
+            IloOplDataSource dataSource = oplF.createOplDataSource(dataDir + dataFilename + ".dat");
             opl.addDataSource(dataSource);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    public void solve() {
+        int status = -1;
+        try {
+            long startTime = System.currentTimeMillis();
             opl.generate();
             if (cplex.solve()) {
-                // print objective function value
-                System.out.println("OBJECTIVE: " + opl.getCplex().getObjValue());
-                setParam();
+                long elasped = System.currentTimeMillis() - startTime;
+                outputParam = setParam();
                 opl.postProcess();
-                // save to file
-                File file =  new File(RESDIR + dataFilePath + ".txt");
-                opl.printSolution(new FileOutputStream(file));
+                // calculate detailed routes solution
+                solution = constructSolution(elasped);
+
             } else {
                 System.out.println("No solution!");
             }
@@ -80,306 +82,209 @@ public class Solver {
             ex.printStackTrace();
             status = 4;
         }
-        if (status != 0) {
+            if (status != 0) {
             System.exit(status);
         }
     }
 
     /**
-     * Read input information from .dat file, used later for node info display and visualization
-     * @param filePath path for the .dat file to read from
+     * Compare the value of objective by OPL and constructed solution calculation, save the result to file
+     * @param resDir Dir path to save the result
+     * @param dataFilename result file name
      */
-    private void readParam(String filePath) {
-        File file = new File(filePath);
-        if(file.isFile() && file.exists()){
-            try {
-                FileInputStream fileInputStream = new FileInputStream(file);
-                InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+    public void validateAndSaveToFile(String resDir, String dataFilename) {
+        try {
+            // save to file
+            File file = new File(resDir + dataFilename + ".txt");
+            opl.printSolution(new FileOutputStream(file));
 
-                String text;
-                Pattern patten;
-                Matcher matcher;
+            Utils.writeToFile(solution.toString(), resDir + dataFilename + "_calculated.txt");
 
-                // set N
-                text = bufferedReader.readLine();
-                patten = Pattern.compile("n = (.*);");
-                matcher = patten.matcher(text);
-                if (matcher.find()) {
-                    N = Integer.parseInt(matcher.group(1));
-                } else {
-                    throw new IllegalArgumentException("Wrong N.");
-                }
-
-                // set K
-                text = bufferedReader.readLine();
-                patten = Pattern.compile("K = (.*);");
-                matcher = patten.matcher(text);
-                if (matcher.find()) {
-                    K = Integer.parseInt(matcher.group(1));
-                } else {
-                    throw new IllegalArgumentException("Wrong K.");
-                }
-
-                // set capacity
-                capacity = new int[K];
-                text = bufferedReader.readLine();
-                patten = Pattern.compile("capacity = \\[(.*)];");
-                matcher = patten.matcher(text);
-                if (matcher.find()) {
-                    String[] c = matcher.group(1).split(",");
-                    for (int i = 0; i < K; i++) {
-                        capacity[i] = Integer.parseInt(c[i]);
-                    }
-                } else {
-                    throw new IllegalArgumentException("Wrong capacity.");
-                }
-
-                // set nodeInfo
-                nodes = new Node[2 * N + 2];
-                bufferedReader.readLine(); // line nodeInfo = [
-                patten = Pattern.compile("<(.*)>");
-                for (int i = 0; i < 2 * N + 2; i++) {
-                    text = bufferedReader.readLine();
-                    matcher = patten.matcher(text);
-                    if (matcher.find()) {
-                        String[] info = matcher.group(1).split(",");
-                        nodes[i] = new Node(Integer.parseInt(info[0]),
-                                Integer.parseInt(info[1]),
-                                Integer.parseInt(info[2]),
-                                Integer.parseInt(info[3]));
-                    } else {
-                        throw new IllegalArgumentException("Wrong node info.");
-                    }
-                }
-                bufferedReader.readLine(); // line ];
-
-                // set X
-                X = new int[2 * N + 2];
-                text = bufferedReader.readLine();
-                patten = Pattern.compile("X = \\[(.*)];");
-                matcher = patten.matcher(text);
-                if (matcher.find()) {
-                     String[] xs = matcher.group(1).split(",");
-                     for (int i = 0; i < xs.length; i++) {
-                         X[i] = Integer.parseInt(xs[i]);
-                     }
-                } else {
-                    throw new IllegalArgumentException("Wrong X.");
-                }
-
-                // set Y
-                Y = new int[2 * N + 2];
-                text = bufferedReader.readLine();
-                patten = Pattern.compile("Y = \\[(.*)];");
-                matcher = patten.matcher(text);
-                if (matcher.find()) {
-                    String[] ys = matcher.group(1).split(",");
-                    for (int i = 0; i < ys.length; i++) {
-                        Y[i] = Integer.parseInt(ys[i]);
-                    }
-                } else {
-                    throw new IllegalArgumentException("Wrong Y.");
-                }
-
-                // set membership
-                membership = new int[2 * N + 2];
-                text = bufferedReader.readLine();
-                patten = Pattern.compile("membership = \\[(.*)]");
-                matcher = patten.matcher(text);
-                if (matcher.find()) {
-                    String[] mem = matcher.group(1).split(",");
-                    for (int i = 0; i < mem.length; i++) {
-                        membership[i] = Integer.parseInt(mem[i]);
-                    }
-                } else {
-                    throw new IllegalArgumentException("Wrong membership.");
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Incorrect format of .dat file. " + e.getMessage());
+            // Model validation, output related info to file (debug usage only)
+            if (opl.getCplex().getObjValue() != solution.getObjective()) {
+                String content = "OPL OBJECTIVE: " + opl.getCplex().getObjValue() + "\n"
+                        + "SOL OBJECTIVE: " + solution.getObjective() + "\n"
+                        + getTrace();
+                Utils.writeToFile(content, resDir + dataFilename + "_diff.txt");
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
     /**
      * This method reads the decision variables from the solved opl model
-     * @throws IloException
      */
-    private void setParam() throws IloException {
+    private OutputParam setParam() {
+        try {
+            int N = getN();
+            int K = getK();
 
-        IloIntMap xMap = opl.getElement("x").asIntMap();
-        IloNumMap TMap = opl.getElement("T").asNumMap();
-        IloNumMap QMap = opl.getElement("Q").asNumMap();
-        IloNumMap DLMap = opl.getElement("DL").asNumMap();
-        IloTupleSet edgeSet = opl.getElement("edge").asTupleSet();
+            IloIntMap xMap = opl.getElement("x").asIntMap();
+            IloNumMap TMap = opl.getElement("T").asNumMap();
+            IloNumMap QMap = opl.getElement("Q").asNumMap();
+            IloNumMap DLMap = opl.getElement("DL").asNumMap();
+            IloTupleSet edgeSet = opl.getElement("edge").asTupleSet();
 
-        x = new int[2 * N + 2][2 * N + 2][K];
-        Iterator iter;
-        for (int k = 1; k <= K; k++) {
-            iter = edgeSet.iterator();
-            while (iter.hasNext()) {
-                IloTuple tuple = (IloTuple) iter.next();
-                x[tuple.getIntValue(0)][tuple.getIntValue(1)][k - 1]
-                        = xMap.getSub(tuple).get(k);
+            int[][][] x = new int[2 * N + 2][2 * N + 2][K];
+            Iterator iter;
+            for (int k = 1; k <= K; k++) {
+                iter = edgeSet.iterator();
+                while (iter.hasNext()) {
+                    IloTuple tuple = (IloTuple) iter.next();
+                    x[tuple.getIntValue(0)][tuple.getIntValue(1)][k - 1]
+                            = xMap.getSub(tuple).get(k);
+                }
             }
-        }
 
-        T = new double[TMap.getSize()][K];
-        for (int k = 1; k <= K; k++) {
-            for (int i = 0; i < TMap.getSize(); i++) {
-                T[i][k - 1] = TMap.getSub(i).get(k);
+            double[][] T = new double[TMap.getSize()][K];
+            for (int k = 1; k <= K; k++) {
+                for (int i = 0; i < TMap.getSize(); i++) {
+                    T[i][k - 1] = TMap.getSub(i).get(k);
+                }
             }
-        }
 
-        Q = new double[QMap.getSize()][K];
-        for (int k = 1; k <= K; k++) {
-            for (int i = 0; i < QMap.getSize(); i++) {
-                Q[i][k - 1] = QMap.getSub(i).get(k);
+            double[][] Q = new double[QMap.getSize()][K];
+            for (int k = 1; k <= K; k++) {
+                for (int i = 0; i < QMap.getSize(); i++) {
+                    Q[i][k - 1] = QMap.getSub(i).get(k);
+                }
             }
-        }
 
-        DL = new double[DLMap.getSize()][K];
-        for (int k = 1; k <= K; k++) {
-            for (int i = 0; i < DLMap.getSize(); i++) {
-                DL[i][k - 1] = DLMap.getSub(i).get(k);
+            double[][] DL = new double[DLMap.getSize()][K];
+            for (int k = 1; k <= K; k++) {
+                for (int i = 0; i < DLMap.getSize(); i++) {
+                    DL[i][k - 1] = DLMap.getSub(i).get(k);
+                }
             }
+            return new OutputParam(x, T, Q, DL);
+        } catch (ilog.concert.IloException e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
         }
-    }
-
-    public List<List<Integer>> constructRoute() {
-        List<List<Integer>> routes = new LinkedList<>();
-        for (int k = 0; k < K; k++) {
-            routes.add(constructRoute(k));
-        }
-        return routes;
+        return null;
     }
 
     /**
-     * Find the consecutive path traversed by vehicle k
-     * @param k vehicle specified
-     * @return A list of nodes start from 0 and end at 2n + 1
+     *
+     * @param timeElapsed Elapsed Time for OPL solver
+     * @return set of routes along with separate & total objective
      */
-    private List<Integer> constructRoute(int k) {
-        List<Integer> route = new LinkedList<>();
+    private Solution constructSolution(long timeElapsed) {
+        Route tempRoute = null;
+        double totalDist = 0;
+        double totalPenalty = 0;
+        List<Route> routes = new LinkedList<>();
+        for (int k = 0; k < getK(); k++) {
+            tempRoute = constructRoute(k);
+            totalDist += tempRoute.getDist();
+            totalPenalty += tempRoute.getPenalty();
+            routes.add(tempRoute);
+        }
+        double objective = getAlpha() * totalDist + getBeta() * totalPenalty;
+        return new Solution(routes, timeElapsed, totalDist, totalPenalty, objective);
+    }
+
+    /**
+     * Find the consecutive path traversed by vehicle k,
+     * calculate and update the node info along the route
+     * @param k vehicle specified
+     * @return Route consists of a list of nodes start from 0 and end at 2n + 1,
+     * with traversed distance and delay penalty calculated on the route
+     */
+    private Route constructRoute(int k) {
+        Vehicle vehicle = getVehicles()[k];
+        Node[] nodes = getNodes();
+        int N = getN();
+        int[][][] x = getx();
+        List<Node> route = new LinkedList<>();
+
+        double dist = 0;
+        double penalty = 0;
+        double time = 0;
+        double load = 0;
+        double tempDL = -1;
         int curr = 0;
-        while (curr != 2 * N + 1) {
-            route.add(curr);
+        while (true) {
+
+            nodes[curr].setQ(load);
+            nodes[curr].setT(time);
+            tempDL = Math.max(0, time - nodes[curr].getTw2());
+            nodes[curr].setDL(tempDL);
+            penalty += tempDL;
+
+            route.add(nodes[curr]);
+
+            if (curr == 2 * N + 1) break;
+
             for (int i = 0; i < 2 * N + 2; i++) {
                 if (x[curr][i][k] == 1) {
+                    time = Math.max(getDistanceMatrix()[curr][i] + nodes[curr].gets() + time, nodes[i].getTw1());
+                    dist += getDistanceMatrix()[curr][i];
+                    load += nodes[i].getq();
                     curr = i; // vehicle k passes arc (curr, i)
                     break;
                 }
             }
         }
-        route.add(2 * N + 1);
-        return route;
+        return new Route(route, vehicle, dist, penalty);
     }
 
     /**
-     * display route information at each node for debug
-     * @param filename output filename
+     *
+     * @return the trace of routes, only a list of node indexes without detailed information
      */
-    public void displaySolution(String filename) {
-        double objVal = 0;
-        int alpha = 3, beta = 1;
-        List<List<Integer>> routes = constructRoute();
-        File file = new File(filename);
-        if (file.exists()) file.delete();
-        BufferedWriter bufferedWriter = null;
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            OutputStreamWriter outputStreamReader = new OutputStreamWriter(fileOutputStream);
-            bufferedWriter = new BufferedWriter(outputStreamReader);
-        } catch (Exception e){
-            e.printStackTrace();
-            System.exit(1);
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int k = 0; k < routes.size(); k++) {
-            sb.append("Vehicle ").append(k).append(" with capacity ").append(capacity[k]).append("\n");
-            List<Integer> route = routes.get(k);
-            double currQ = 0;
-            double currT = 0;
-            for (int i = 0; i < route.size(); i++) {
-                int node = route.get(i);
-                sb.append("\tNode ").append(node).append("\n");
-                sb.append("\t\tLoad ").append(Q[node][k]).append("\n");
-                sb.append("\t\tTime ").append(T[node][k]).append("\n");
-                objVal += beta * Math.max(0, T[node][k] - nodes[node].getTw2()); // penalty
-                sb.append("\t\tDelay ").append(DL[node][k]).append("\n");
-                sb.append("\t\t\tTime Window [").append(nodes[node].getTw1())
-                        .append(", ")
-                        .append(nodes[node].getTw2())
-                        .append("]").append("\n");
-                sb.append("\t\t\tLoad at node ").append(nodes[node].getQ()).append("\n");
-                sb.append("\t\t\tService time at node ").append(nodes[node].getS()).append("\n");
-                currQ += nodes[node].getQ();
-                sb.append("\t\tActual Load ").append(currQ).append("\n");
-                sb.append("\t\tActual Start Time ").append(currT).append("\n");
-                if (i != route.size() - 1) {
-                    sb.append("\tCost between ").append(distance(node, route.get(i + 1))).append("\n");
-                    currT = Math.max(nodes[route.get(i + 1)].getTw1(), currT + distance(node, route.get(i + 1))
-                            + nodes[node].getS());
-                    objVal += alpha * distance(node, route.get(i + 1));
-                }
-            }
-        }
-        System.out.println(objVal);
-        try {
-            bufferedWriter.write(sb.toString());
-            bufferedWriter.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public String getTrace() {
+        return solution.trace();
     }
 
-    private double distance(int from, int to) {
-        return Math.sqrt((X[from] - X[to]) * (X[from] - X[to]) + (Y[from] - Y[to]) * (Y[from] - Y[to]));
+
+    public Solution getSolution() {
+        return solution;
     }
 
     public int getK() {
-        return K;
+        return inputParam.getK();
     }
 
     public int getN() {
-        return N;
+        return inputParam.getN();
     }
 
-    public int[] getCapacity() {
-        return capacity;
+    public Vehicle[] getVehicles() {
+        return inputParam.getVehicles();
     }
 
     public Node[] getNodes() {
-        return nodes;
+        return inputParam.getNodes();
     }
 
-    public int[] getX() {
-        return X;
+    public double[][] getDistanceMatrix() {
+        return inputParam.getDistanceMatrix();
     }
 
-    public int[] getY() {
-        return Y;
+    public double getAlpha() {
+        return inputParam.getAlpha();
     }
 
-    public int[] getMembership() {
-        return membership;
+    public double getBeta() {
+        return inputParam.getBeta();
     }
 
     public double[][] getDL() {
-        return DL;
+        return outputParam.getDL();
     }
 
     public double[][] getQ() {
-        return Q;
+        return outputParam.getQ();
     }
 
     public double[][] getT() {
-        return T;
+        return outputParam.getT();
     }
 
     public int[][][] getx() {
-        return x;
+        return outputParam.getx();
     }
 }
