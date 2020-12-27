@@ -15,8 +15,8 @@ public class Main {
 
 //        DataGenerator gen = new DataGenerator(n, memberPercent, alpha, beta);
 
-        String dataDir = "data\\pdp_" + n + "_mem_" + memberPercent + "_validation\\" + alpha + "_" + beta + "\\";
-        String resDirOPL = "res\\opl\\pdp_" + n + "_mem_" + memberPercent + "_validation\\" + alpha + "_" + beta + "\\";
+        String dataDir = "data\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
+        String resDirOPL = "res\\opl\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
         String resDirHEU = "res\\heuristics\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
 //
 //        List<String> files = Utils.fileListNoExtension(dataDir);
