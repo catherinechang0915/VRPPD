@@ -57,6 +57,7 @@ public class Node {
                 .append("]").append("\n");
         sb.append("\t\t\tLoad at node ").append(q).append("\n");
         sb.append("\t\t\tService time at node ").append(s).append("\n");
+        sb.append("\t\t\tLocation (").append(x).append(", ").append(y).append(")").append("\n");
         return sb.toString();
     }
 

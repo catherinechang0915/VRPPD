@@ -99,10 +99,11 @@ public class Solver {
 
             Utils.writeToFile(solution.toString(), resDir + dataFilename + "_calculated.txt");
 
+            double calcObjective = solution.getObjective(inputParam.getAlpha(), inputParam.getBeta());
             // Model validation, output related info to file (debug usage only)
-            if (opl.getCplex().getObjValue() != solution.getObjective()) {
+            if (opl.getCplex().getObjValue() != calcObjective) {
                 String content = "OPL OBJECTIVE: " + opl.getCplex().getObjValue() + "\n"
-                        + "SOL OBJECTIVE: " + solution.getObjective() + "\n"
+                        + "SOL OBJECTIVE: " + calcObjective + "\n"
                         + getTrace();
                 Utils.writeToFile(content, resDir + dataFilename + "_diff.txt");
             }
@@ -184,8 +185,7 @@ public class Solver {
             totalPenalty += tempRoute.getPenalty();
             routes.add(tempRoute);
         }
-        double objective = getAlpha() * totalDist + getBeta() * totalPenalty;
-        return new Solution(routes, timeElapsed, totalDist, totalPenalty, objective);
+        return new Solution(routes, timeElapsed, totalDist, totalPenalty);
     }
 
     /**

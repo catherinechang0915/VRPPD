@@ -33,7 +33,7 @@ public class DataGenerator {
         }
 
         String inputDir = "raw_data\\" + "pdp_" + N + "\\";
-        String outputDir = "data\\" + "pdp_" + n + "_mem_" + memberPercent + "_validation\\" + alpha + "_" + beta + "\\";
+        String outputDir = "data\\" + "pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
         Utils.createDirectory(outputDir);
         List<String> filenames = Utils.fileList(inputDir);
         if (filenames == null || filenames.size() == 0) {
@@ -44,10 +44,10 @@ public class DataGenerator {
         Map<String, Integer> kMap = Utils.getVehicleNumber(inputDir + "vehicle.txt");
         for (String file : filenames) {
             if (!file.equals("vehicle.txt")) {
-                generateFile(n, kMap.get(file), memberPercent, alpha, beta,
-                        inputDir + file, outputDir + file.substring(0, file.length() - 4) + ".dat");
-//                generateFile(n, -1, memberPercent, alpha, beta,
+//                generateFile(n, kMap.get(file), memberPercent, alpha, beta,
 //                        inputDir + file, outputDir + file.substring(0, file.length() - 4) + ".dat");
+                generateFile(n, -1, memberPercent, alpha, beta,
+                        inputDir + file, outputDir + file.substring(0, file.length() - 4) + ".dat");
             }
         }
     }

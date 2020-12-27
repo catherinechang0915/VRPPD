@@ -230,7 +230,7 @@ public class Utils {
             nodes[0] = unsortedNodes.get(0);
             nodes[2 * N + 1] = new Node(unsortedNodes.get(0));
             nodes[0].setMembership(1);
-            nodes[0].setMembership(1);
+            nodes[2 * N + 1].setMembership(1);
 
             // internal pd-pairs
             int index = 1;
@@ -433,6 +433,11 @@ public class Utils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static double calculateDistance(Node n1, Node n2) {
+        return Math.sqrt((n1.getX() - n2.getX()) * (n1.getX() - n2.getX())
+                + (n1.getY() - n2.getY()) * (n1.getY() - n2.getY()));
     }
 
 }

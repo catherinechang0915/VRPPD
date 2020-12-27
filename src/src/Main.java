@@ -8,8 +8,8 @@ public class Main {
 
     public static void main(String[] args) {
 
-        int n = 20;
-        double memberPercent = 0.6;
+        int n = 100;
+        double memberPercent = 1.0;
         int alpha = 1;
         int beta = 1;
 
@@ -33,8 +33,9 @@ public class Main {
 
         InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
         MySolver mySolver = new MySolver(inputParam);
-        Solution sol = mySolver.initialSolutionConstruction();
-        System.out.println(sol);
+        Solution sol = mySolver.solve();
+        System.out.println(sol.trace());
+        System.out.println(sol.objective());
         Visualizer visualizer = new Visualizer(sol);
     }
 }

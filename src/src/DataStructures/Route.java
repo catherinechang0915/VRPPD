@@ -1,6 +1,6 @@
 package src.DataStructures;
 
-import javafx.util.Pair;
+import src.Utils;
 
 import java.util.List;
 
@@ -17,16 +17,13 @@ public class Route {
     public Route(List<Node> route, Vehicle vehicle, double dist, double penalty) {
         this.route = route;
         this.vehicle = vehicle;
+        this.dist = dist;
+        this.penalty = penalty;
     }
 
-//    public void updateObjective(double[][] distanceMatrix) {
-//        for (int i = 0; i < route.size(); i++) {
-//            if (i != route.size() - 1) {
-//                dist += distanceMatrix[route.get(i).getIndex()][route.get(i + 1).getIndex()];
-//            }
-//            penalty += route.get(i).getDL();
-//        }
-//    }
+    public Route(List<Node> route, Vehicle vehicle) {
+        this(route, vehicle, 0, 0);
+    }
 
     public String trace() {
         StringBuilder sb = new StringBuilder();
@@ -43,8 +40,11 @@ public class Route {
         StringBuilder sb = new StringBuilder();
         sb.append("Vehicle ").append(vehicle.getK()).append(" with capacity ")
                 .append(vehicle.getCapacity()).append("\n");
-        for (Node node : route) {
-            sb.append(node.toString());
+        for (int i = 0; i < route.size(); i++) {
+            sb.append(route.get(i).toString());
+            if (i != route.size() - 1) {
+                sb.append("Distance between " + Utils.calculateDistance(route.get(i), route.get(i + 1))).append("\n");
+            }
         }
         sb.append("\n");
         return sb.toString();
@@ -60,5 +60,21 @@ public class Route {
 
     public List<Node> getNodes() {
         return route;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setDist(double dist) {
+        this.dist = dist;
+    }
+
+    public void setPenalty(double penalty) {
+        this.penalty = penalty;
+    }
+
+    public double getObjective(double alpha, double beta) {
+        return alpha * dist + beta * penalty;
     }
 }

@@ -13,30 +13,52 @@ public class MySolver {
         this.inputParam = inputParam;
     }
 
-    public Solution initialSolutionConstruction() {
+    public Solution solve() {
+        int MAX_ITER = 1000;
+
+        int N = inputParam.getN();
+        int q = (int) (0.1 * N);
+
+        Solution sol = initialSolutionConstruction();
+
+        for (int i = 0; i < MAX_ITER; i++) {
+            Set<Integer> nodePair = new HashSet<>();
+            for (int k = 0; k < q; k++) {
+                int rand = (int)(Math.random() * N) + 1;
+                while (nodePair.contains(rand)) {
+                    rand = (int)(Math.random() * N) + 1;
+                }
+                nodePair.add(rand);
+            }
+            randomDestroy(sol, nodePair);
+            bestConstruct(sol, nodePair);
+        }
+        return sol;
+    }
+
+    private Solution initialSolutionConstruction() {
         List<Route> routes = new LinkedList<>();
         double totalDistance = 0;
         double totalDelay = 0;
-        int n = inputParam.getN() * 2 + 2;
-        Set<Integer> nodeNotProcessed = new HashSet<>();
-        for (int i = 1; i < n - 1; i++) {
-            nodeNotProcessed.add(i);
+        int N = inputParam.getN();
+
+        // store the unprocessed request pairs
+        Set<Integer> nodePairNotProcessed = new HashSet<>();
+        for (int i = 1; i <= N; i++) {
+            nodePairNotProcessed.add(i);
         }
 
-        int routeCount = 0;
-
-        while (nodeNotProcessed.size() != 0) {
-            Route route = initialRouteConstruction(routeCount, inputParam, nodeNotProcessed);
+        for (int routeCount = 0; routeCount < inputParam.getK(); routeCount++) {
+            Route route = initialRouteConstruction(routeCount, nodePairNotProcessed);
+            routes.add(route);
             totalDistance += route.getDist();
             totalDelay += route.getPenalty();
-            routeCount++;
         }
 
-        double objective = inputParam.getAlpha() * totalDistance + inputParam.getBeta() * totalDelay;
-        return new Solution(routes, totalDistance, totalDelay, objective);
+        return new Solution(routes, totalDistance, totalDelay);
     }
 
-    private Route initialRouteConstruction(int routeCount, InputParam inputParam, Set<Integer> nodeNotProcessed) {
+    private Route initialRouteConstruction(int routeCount, Set<Integer> nodeNotProcessed) {
         double[][] distanceMatrix = inputParam.getDistanceMatrix();
         Node[] nodes = inputParam.getNodes();
         Vehicle vehicle = inputParam.getVehicles()[routeCount];
@@ -50,120 +72,178 @@ public class MySolver {
         double beta = inputParam.getBeta();
         double dist = distanceMatrix[0][nodes.length - 1];
         double penalty = 0;
-        double objective = alpha * dist + beta * penalty;
+
+        Route route = new Route(routeNodes, vehicle);
 
         while (true) {
+
             int nodeIndexToInsert = -1;
-            int indexToInsert = -1;
+            int pIndexToInsert = -1;
+            int dIndexToInsert = -1;
             double minObjectiveIncrease = Double.MAX_VALUE;
+            double minDistIncrease = Double.MAX_VALUE;
+            double minPenaltyIncrease = Double.MAX_VALUE;
+
             for (int nodeIndex : nodeNotProcessed) {
-                for (int index = 1; index < routeNodes.size(); index++) {
-                    double objectiveIncrease
-                            = checkNodeInsertion(routeNodes, nodeIndex, index, inputParam, vehicle);
-                    if (objectiveIncrease < 0) continue; // infeasible
-                    if (objectiveIncrease < minObjectiveIncrease) {
-                        minObjectiveIncrease = objectiveIncrease;
-                        indexToInsert = index;
-                        nodeIndexToInsert = nodeIndex;
+                for (int pIndex = 1; pIndex < routeNodes.size(); pIndex++) {
+                    for (int dIndex = pIndex; dIndex < routeNodes.size(); dIndex++) {
+                        Pair<Double, Double> objectivePairIncrease
+                                 = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
+                        if (objectivePairIncrease == null) continue; // infeasible
+
+                        if (alpha * objectivePairIncrease.getKey() + beta * objectivePairIncrease.getValue()
+                                < minObjectiveIncrease) {
+                            minDistIncrease = objectivePairIncrease.getKey();
+                            minPenaltyIncrease = objectivePairIncrease.getValue();
+                            pIndexToInsert = pIndex;
+                            dIndexToInsert = dIndex;
+                            nodeIndexToInsert = nodeIndex;
+                        }
                     }
                 }
             }
-            if (indexToInsert == -1) break; // no feasible position to insert on this route
-            nodeInsertion(routeNodes, nodeIndexToInsert, indexToInsert, inputParam);
+            if (nodeIndexToInsert == -1) break; // no feasible position to insert on this route
+            nodeInsertion(route, nodeIndexToInsert, pIndexToInsert, dIndexToInsert);
             nodeNotProcessed.remove(nodeIndexToInsert);
-            objective += minObjectiveIncrease;
+            dist += minDistIncrease;
+            penalty += minPenaltyIncrease;
         }
-
-        Pair<Double, Double> pairs = calculateObjective(routeNodes, distanceMatrix);
-        System.out.println(pairs.getKey() + " " + pairs.getValue());
-        dist = pairs.getKey();
-        penalty = pairs.getValue();
-        Route route = new Route(routeNodes, vehicle, dist, penalty);
+        route.setDist(dist);
+        route.setPenalty(penalty);
         return route;
     }
 
-    public double checkNodeInsertion(List<Node> routeNodes, int nodeIndex, int index, InputParam inputParam, Vehicle vehicle) {
-        double[][] distanceMatrix = inputParam.getDistanceMatrix();
-        Node[] nodes = inputParam.getNodes();
+//    private double calcNodePairBestInsertion(Route route, int nodeIndex) {
+//
+//    }
 
-        // First check pick and delivery order
-        int N = inputParam.getN();
-        int pairNodeIndex = nodeIndex < N ? nodeIndex + N : nodeIndex - N;
-        int pairIndex = routeNodes.indexOf(nodes[pairNodeIndex]);
-        if (pairIndex != -1 && (pairIndex - index) * (pairNodeIndex - nodeIndex) < 0) {
-            return -1;
-        }
+    /**
+     * Feasibility check
+     * @param route insert request in this route
+     * @param nodeIndex node index in inputParam.Node[], request pair is (index, index + N)
+     * @param pIndex pickup node insert in route at position pIndex
+     * @param dIndex delivery node insert in route at position dIndex
+     * @return dist increase and penalty increase
+     */
+    private Pair<Double, Double> checkNodePairInsertion(Route route, int nodeIndex, int pIndex, int dIndex) {
 
-        // calculate the increase distance
-        Node node = nodes[nodeIndex];
-        Node prevNode = routeNodes.get(index - 1);
-        Node nextNode = routeNodes.get(index);
-        double distIncrease = distanceMatrix[prevNode.getIndex()][node.getIndex()]
-                + distanceMatrix[node.getIndex()][nextNode.getIndex()]
-                - distanceMatrix[prevNode.getIndex()][nextNode.getIndex()];
+            List<Node> routeNodes = route.getNodes();
 
-        // initialization to be the value before the node to be inserted
-        double load = prevNode.getQ();
-        double time = prevNode.getT();
+            double[][] distanceMatrix = inputParam.getDistanceMatrix();
+            Node[] nodes = inputParam.getNodes();
 
-        // calculate along iterating the nodes after, before insertion
-        double originalPenalty = 0;
-        double currPenalty = 0;
+            // case 1: p-d pair not consecutive
+            // Got prev and next nodes for pickup and delivery nodes
+            Node pNode = nodes[nodeIndex];
+            Node dNode = nodes[nodeIndex + inputParam.getN()];
+            Node prevPNode = routeNodes.get(pIndex - 1);
+            Node nextPNode = routeNodes.get(pIndex);
+            Node prevDNode = routeNodes.get(dIndex - 1);
+            Node nextDNode = routeNodes.get(dIndex);
 
-        // check the current insert node
-        load += node.getq();
-        if (load < 0 || load > vehicle.getCapacity()) return -1;
-        time = Math.max(node.getTw1(), prevNode.gets() + time
-                + distanceMatrix[prevNode.getIndex()][node.getIndex()]);
-        if (time > node.getTw2() && node.getMembership() == 1) return -1;
-        currPenalty += Math.max(time - node.getTw2(), 0);
+            // case 2: p-d pair consecutive
+            if (pIndex == dIndex) {
+                nextPNode = dNode;
+                prevDNode = pNode;
+            }
 
-        // check the node after
-        originalPenalty += Math.max(nextNode.getT() - nextNode.getTw2(), 0);
+            Node prevNode = null;
+            Node currNode = null;
 
-        load += nextNode.getq();
-        if (load < 0 || load > vehicle.getCapacity()) return -1;
-        time = Math.max(nextNode.getTw1(), node.gets() + time
-                + distanceMatrix[node.getIndex()][nextNode.getIndex()]);
-        if (time > nextNode.getTw2() && nextNode.getMembership() == 1) return -1;
-        currPenalty += Math.max(time - nextNode.getTw2(), 0);
+            // calculate the increase distance
+            double distIncrease = distanceMatrix[prevPNode.getIndex()][pNode.getIndex()]
+                    + distanceMatrix[pNode.getIndex()][nextPNode.getIndex()]
+                    + distanceMatrix[prevDNode.getIndex()][dNode.getIndex()]
+                    + distanceMatrix[dNode.getIndex()][nextDNode.getIndex()]
+                    - distanceMatrix[prevPNode.getIndex()][nextPNode.getIndex()]
+                    - distanceMatrix[prevDNode.getIndex()][nextDNode.getIndex()];
 
-        // check the following nodes
-        Node currNode;
-        for (int currIndex = index + 1; currIndex < routeNodes.size(); currIndex++) {
-            prevNode = routeNodes.get(currIndex - 1);
-            currNode = routeNodes.get(currIndex);
-            // calculate original delay first
-            originalPenalty += Math.max(currNode.getT() - currNode.getTw2(), 0);
-            // check load
-            load += currNode.getq();
-            if (load < 0 || load > vehicle.getCapacity()) return -1;
-            time = Math.max(currNode.getTw1(), prevNode.gets() + time
-                    + distanceMatrix[prevNode.getIndex()][currNode.getIndex()]);
-            if (time > currNode.getTw2() && currNode.getMembership() == 1) return -1;
-            currPenalty += Math.max(time - currNode.getTw2(), 0);
-        }
-        double penaltyIncrease = currPenalty - originalPenalty;
-        return inputParam.getAlpha() * distIncrease + inputParam.getBeta() * penaltyIncrease;
+            // initialization to be the value before the node to be inserted
+            double load = prevPNode.getQ();
+            double time = prevPNode.getT();
+
+            // calculate along iterating the nodes after, before insertion
+            double originalPenalty = 0;
+            double currPenalty = 0;
+
+            // check the current insert pickup node
+            load += pNode.getq();
+            if (load < 0 || load > route.getVehicle().getCapacity()) return null;
+            time = Math.max(pNode.getTw1(), prevPNode.gets() + time
+                    + distanceMatrix[prevPNode.getIndex()][pNode.getIndex()]);
+            if (time > pNode.getTw2() && pNode.getMembership() == 1) return null;
+            currPenalty += Math.max(time - pNode.getTw2(), 0);
+
+            // check the following nodes
+            prevNode = pNode;
+            for (int currIndex = pIndex; currIndex < dIndex; currIndex++) {
+                currNode = routeNodes.get(currIndex);
+                // calculate original delay first
+                originalPenalty += Math.max(currNode.getT() - currNode.getTw2(), 0);
+                // check load
+                load += currNode.getq();
+                if (load < 0 || load > route.getVehicle().getCapacity()) return null;
+                time = Math.max(currNode.getTw1(), prevNode.gets() + time
+                        + distanceMatrix[prevNode.getIndex()][currNode.getIndex()]);
+                if (time > currNode.getTw2() && currNode.getMembership() == 1) return null;
+                currPenalty += Math.max(time - currNode.getTw2(), 0);
+            }
+
+            // check the current insert delivery node
+            load += dNode.getq();
+            if (load < 0 || load > route.getVehicle().getCapacity()) return null;
+            time = Math.max(dNode.getTw1(), prevDNode.gets() + time
+                    + distanceMatrix[prevDNode.getIndex()][dNode.getIndex()]);
+            if (time > dNode.getTw2() && dNode.getMembership() == 1) return null;
+            currPenalty += Math.max(time - dNode.getTw2(), 0);
+
+            // check the following nodes
+            prevNode = dNode;
+            for (int currIndex = dIndex; currIndex < routeNodes.size(); currIndex++) {
+                currNode = routeNodes.get(currIndex);
+                // calculate original delay first
+                originalPenalty += Math.max(currNode.getT() - currNode.getTw2(), 0);
+                // check load
+                load += currNode.getq();
+                if (load < 0 || load > route.getVehicle().getCapacity()) return null;
+                time = Math.max(currNode.getTw1(), prevNode.gets() + time
+                        + distanceMatrix[prevNode.getIndex()][currNode.getIndex()]);
+                if (time > currNode.getTw2() && currNode.getMembership() == 1) return null;
+                currPenalty += Math.max(time - currNode.getTw2(), 0);
+            }
+
+            double penaltyIncrease = currPenalty - originalPenalty;
+            return new Pair<>(distIncrease, penaltyIncrease);
     }
 
-    public void nodeInsertion(List<Node> routeNodes, int nodeIndex, int index, InputParam inputParam) {
+    /**
+     * Insert node[nodeIndex] at pIndex, node[nodeIndex + N] at dIndex
+     * Update load, time after insertion position
+     * @param route route to be inserted
+     * @param nodeIndex index for node pair
+     * @param pIndex pickup node insert in route at position pIndex
+     * @param dIndex delivery node insert in route at position dIndex
+     */
+    private void nodeInsertion(Route route, int nodeIndex, int pIndex, int dIndex) {
+        List<Node> routeNodes = route.getNodes();
         Node[] nodes = inputParam.getNodes();
         double[][] distanceMatrix = inputParam.getDistanceMatrix();
 
-        Node node = nodes[nodeIndex];
-        Node prevNode = routeNodes.get(index - 1);
+        Node pNode = nodes[nodeIndex];
+        Node dNode = nodes[nodeIndex + inputParam.getN()];
+        Node prevNode = routeNodes.get(pIndex - 1);
 
         double load = prevNode.getQ();
         double time = prevNode.getT();
 
-        routeNodes.add(index, node);
+        routeNodes.add(dIndex, dNode);
+        routeNodes.add(pIndex, pNode);
 
         Node currNode;
-        for (int currIndex = index; currIndex < routeNodes.size(); currIndex++) {
+        for (int currIndex = pIndex; currIndex < routeNodes.size(); currIndex++) {
             currNode = routeNodes.get(currIndex);
             load += currNode.getq();
-            node.setQ(load);
+            currNode.setQ(load);
             time = Math.max(currNode.getTw1(), prevNode.gets() + time
                     + distanceMatrix[prevNode.getIndex()][currNode.getIndex()]);
             double delay = Math.max(time - currNode.getTw2(), 0);
@@ -173,15 +253,114 @@ public class MySolver {
         }
     }
 
-    private Pair<Double, Double> calculateObjective(List<Node> routeNodes, double[][] distanceMatrix) {
+    /**
+     * Destroy Operator: remove nodes in nodePair
+     * @param sol solution to be operated on
+     * @param nodePair request set to be removed
+     */
+    private void randomDestroy(Solution sol, Set<Integer> nodePair) {
+        List<Route> routes = sol.getRoutes();
+        for (int i = 0; i < routes.size(); i++) {
+            Route route = routes.get(i);
+            List<Node> routeNodes = route.getNodes();
+            for (Node node : new LinkedList<>(routeNodes)) {
+                if (nodePair.contains(node.getIndex())
+                        || nodePair.contains(node.getIndex() - inputParam.getN())) {
+                    routeNodes.remove(node);
+                }
+            }
+        }
+        updateSolution(sol);
+    }
+
+    /**
+     * Recalculate load, time and objective for each route in solution
+     * @param solution solution to be updated
+     */
+    private void updateSolution(Solution solution) {
+        for (Route route : solution.getRoutes()) {
+            updateRoute(route);
+        }
+    }
+
+    /**
+     * After destroy, update the load and time at each node
+     * Recalculate and update the objective for each route
+     * @param route route to be updated
+     */
+    private void updateRoute(Route route) {
+        List<Node> nodes = route.getNodes();
+        Node prevNode;
+        Node currNode;
+        double load = 0;
+        double time = 0;
+        double delay = 0;
         double dist = 0;
         double penalty = 0;
-        for (int i = 0; i < routeNodes.size(); i++) {
-            if (i != routeNodes.size() - 1) {
-                dist += distanceMatrix[routeNodes.get(i).getIndex()][routeNodes.get(i + 1).getIndex()];
-            }
-            penalty += routeNodes.get(i).getDL();
+        for (int i = 1; i < nodes.size(); i++) {
+            prevNode = nodes.get(i - 1);
+            currNode = nodes.get(i);
+            // load
+            load += currNode.getq();
+            currNode.setQ(load);
+            // time
+            time = Math.max(prevNode.gets() + Utils.calculateDistance(prevNode, currNode) + time, currNode.getTw1());
+            currNode.setT(time);
+            // delay
+            delay = Math.max(0, time - currNode.getTw2());
+            currNode.setDL(delay);
+            penalty += delay;
+            // dist
+            dist += Utils.calculateDistance(prevNode, currNode);
         }
-        return new Pair<>(dist, penalty);
+        route.setDist(dist);
+        route.setPenalty(penalty);
+    }
+
+    /**
+     * Construct Operator: insert at position with minimum objective increase
+     * @param solution solution to be modified
+     * @param nodePair node index pairs removed to be inserted
+     */
+    private void bestConstruct(Solution solution, Set<Integer> nodePair) {
+        try {
+            for (int nodeIndex : nodePair) {
+                Route minRoute = null;
+                int pIndexToInsert = -1;
+                int dIndexToInsert = -1;
+                double minObjectiveIncrease = Double.MAX_VALUE;
+                double minDistIncrease = Double.MAX_VALUE;
+                double minPenaltyIncrease = Double.MAX_VALUE;
+                for (Route route : solution.getRoutes()) {
+                    for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
+                        for (int dIndex = pIndex; dIndex < route.getNodes().size(); dIndex++) {
+                            Pair<Double, Double> objectivePairIncrease
+                                    = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
+                            if (objectivePairIncrease == null) continue; // infeasible
+                            if (inputParam.getAlpha() * objectivePairIncrease.getKey()
+                                    + inputParam.getBeta() * objectivePairIncrease.getValue()
+                                    < minObjectiveIncrease) {
+                                minRoute = route;
+                                minDistIncrease = objectivePairIncrease.getKey();
+                                minPenaltyIncrease = objectivePairIncrease.getValue();
+                                pIndexToInsert = pIndex;
+                                dIndexToInsert = dIndex;
+                            }
+                        }
+                    }
+                }
+                if (minRoute == null) {
+                    throw new NullPointerException("No feasible insertion");
+                }
+                nodeInsertion(minRoute, nodeIndex, pIndexToInsert, dIndexToInsert);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void regretConstruct(Solution solution, Set<Integer> nodePair) {
+
     }
 }

@@ -9,23 +9,21 @@ public class Solution {
     long timeElapsed;
     double totalDist;
     double totalPenalty;
-    double objective;
 
     public Solution() {
         sol = new LinkedList<>();
         timeElapsed = -1;
     }
 
-    public Solution(List<Route> sol, double totalDist, double totalPenalty, double objective) {
-        this(sol, -1, totalDist, totalPenalty, objective);
+    public Solution(List<Route> sol, double totalDist, double totalPenalty) {
+        this(sol, -1, totalDist, totalPenalty);
     }
 
-    public Solution(List<Route> sol, long timeElapsed, double totalDist, double totalPenalty, double objective) {
+    public Solution(List<Route> sol, long timeElapsed, double totalDist, double totalPenalty) {
         this.sol = sol;
         this.timeElapsed = timeElapsed;
         this.totalDist = totalDist;
         this.totalPenalty = totalPenalty;
-        this.objective = objective;
     }
 
 
@@ -41,6 +39,15 @@ public class Solution {
         return sb.toString();
     }
 
+    public String objective() {
+        StringBuilder sb = new StringBuilder();
+//        sb.append("Objective Value: ").append(objective).append("\n");
+        sb.append("Total Distance Traveled: ").append(totalDist).append("\n");
+        sb.append("Total Penalty of Delay: ").append(totalPenalty).append("\n");
+        sb.append("Time Elasped: ").append(timeElapsed).append("\n");
+        return sb.toString();
+    }
+
     /**
      *
      * @return detailed information about the solution routes
@@ -48,7 +55,7 @@ public class Solution {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Objective Value: ").append(objective).append("\n");
+//        sb.append("Objective Value: ").append(objective).append("\n");
         sb.append("Total Distance Traveled: ").append(totalDist).append("\n");
         sb.append("Total Penalty of Delay: ").append(totalPenalty).append("\n");
         sb.append("Time Elasped: ").append(timeElapsed).append("\n");
@@ -70,7 +77,15 @@ public class Solution {
         return totalPenalty;
     }
 
-    public double getObjective() {
-        return objective;
+    public void setTotalDist(double totalDist) {
+        this.totalDist = totalDist;
+    }
+
+    public void setTotalPenalty(double totalPenalty) {
+        this.totalPenalty = totalPenalty;
+    }
+
+    public double getObjective(double alpha, double beta) {
+        return alpha * totalDist + beta * totalPenalty;
     }
 }
