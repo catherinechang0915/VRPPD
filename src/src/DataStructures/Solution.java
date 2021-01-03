@@ -34,7 +34,7 @@ public class Solution {
     public String trace() {
         StringBuilder sb = new StringBuilder();
         for (Route r : sol) {
-            sb.append(r.trace()).append("\n");
+            if (r.getNodes().size() != 2) sb.append(r.trace()).append("\n");
         }
         return sb.toString();
     }
@@ -60,7 +60,7 @@ public class Solution {
         sb.append("Total Penalty of Delay: ").append(totalPenalty).append("\n");
         sb.append("Time Elasped: ").append(timeElapsed).append("\n");
         for (Route r : sol) {
-            sb.append(r.toString());
+            if (r.getNodes().size() != 2) sb.append(r.toString());
         }
         return sb.toString();
     }

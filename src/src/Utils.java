@@ -440,4 +440,8 @@ public class Utils {
                 + (n1.getY() - n2.getY()) * (n1.getY() - n2.getY()));
     }
 
+    public static boolean doubleEqual(double n1, double n2) {
+        return Math.abs(n1 - n2) < Math.pow(10, -5);
+    }
+
 }

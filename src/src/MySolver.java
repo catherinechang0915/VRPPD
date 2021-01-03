@@ -14,15 +14,22 @@ public class MySolver {
     }
 
     public Solution solve() {
-        int MAX_ITER = 10000;
+        int MAX_ITER = 1000;
         int q = (int) (0.1 * inputParam.getN());
 
         Solution sol = initialSolutionConstruction();
 
+        Random gen = new Random(1);
+
         for (int i = 0; i < MAX_ITER; i++) {
-            Set<Integer> nodePair = generateNodePair(q);
+            Set<Integer> nodePair = generateNodePair(q, gen.nextInt(100));
             randomDestroy(sol, nodePair);
+            System.out.println("Iter" + i);
+            System.out.println("\tDestroy");
+            validation(sol);
             bestConstruct(sol, nodePair);
+            System.out.println("\tConstruct");
+            validation(sol);
         }
         return sol;
     }
@@ -39,6 +46,20 @@ public class MySolver {
             int rand = (int)(Math.random() * N) + 1;
             while (nodePair.contains(rand)) {
                 rand = (int)(Math.random() * N) + 1;
+            }
+            nodePair.add(rand);
+        }
+        return nodePair;
+    }
+
+    private Set<Integer> generateNodePair(int q, int seed) {
+        Random generator = new Random(seed);
+        int N = inputParam.getN();
+        Set<Integer> nodePair = new HashSet<>();
+        for (int k = 0; k < q; k++) {
+            int rand = (int)(generator.nextDouble() * N) + 1;
+            while (nodePair.contains(rand)) {
+                rand = (int)(generator.nextDouble() * N) + 1;
             }
             nodePair.add(rand);
         }
@@ -74,11 +95,9 @@ public class MySolver {
 
         // initialize route with depots
         List<Node> routeNodes = new LinkedList<>();
-        routeNodes.add(nodes[0]);
-        routeNodes.add(nodes[nodes.length - 1]);
+        routeNodes.add(new Node(nodes[0]));
+        routeNodes.add(new Node(nodes[nodes.length - 1]));
 
-        double alpha = inputParam.getAlpha();
-        double beta = inputParam.getBeta();
         double dist = distanceMatrix[0][nodes.length - 1];
         double penalty = 0;
 
@@ -157,12 +176,20 @@ public class MySolver {
             Node currNode = null;
 
             // calculate the increase distance
-            double distIncrease = distanceMatrix[prevPNode.getIndex()][pNode.getIndex()]
-                    + distanceMatrix[pNode.getIndex()][nextPNode.getIndex()]
-                    + distanceMatrix[prevDNode.getIndex()][dNode.getIndex()]
-                    + distanceMatrix[dNode.getIndex()][nextDNode.getIndex()]
-                    - distanceMatrix[prevPNode.getIndex()][nextPNode.getIndex()]
-                    - distanceMatrix[prevDNode.getIndex()][nextDNode.getIndex()];
+            double distIncrease = 0;
+            if (pIndex == dIndex) {
+                distIncrease = distanceMatrix[prevPNode.getIndex()][pNode.getIndex()]
+                        + distanceMatrix[pNode.getIndex()][dNode.getIndex()]
+                        + distanceMatrix[dNode.getIndex()][nextDNode.getIndex()]
+                        - distanceMatrix[prevPNode.getIndex()][nextDNode.getIndex()];
+            } else {
+                distIncrease = distanceMatrix[prevPNode.getIndex()][pNode.getIndex()]
+                        + distanceMatrix[pNode.getIndex()][nextPNode.getIndex()]
+                        + distanceMatrix[prevDNode.getIndex()][dNode.getIndex()]
+                        + distanceMatrix[dNode.getIndex()][nextDNode.getIndex()]
+                        - distanceMatrix[prevPNode.getIndex()][nextPNode.getIndex()]
+                        - distanceMatrix[prevDNode.getIndex()][nextDNode.getIndex()];
+            }
 
             // initialization to be the value before the node to be inserted
             double load = prevPNode.getQ();
@@ -193,6 +220,7 @@ public class MySolver {
                         + distanceMatrix[prevNode.getIndex()][currNode.getIndex()]);
                 if (time > currNode.getTw2() && currNode.getMembership() == 1) return null;
                 currPenalty += Math.max(time - currNode.getTw2(), 0);
+                prevNode = currNode;
             }
 
             // check the current insert delivery node
@@ -216,6 +244,7 @@ public class MySolver {
                         + distanceMatrix[prevNode.getIndex()][currNode.getIndex()]);
                 if (time > currNode.getTw2() && currNode.getMembership() == 1) return null;
                 currPenalty += Math.max(time - currNode.getTw2(), 0);
+                prevNode = currNode;
             }
 
             double penaltyIncrease = currPenalty - originalPenalty;
@@ -379,5 +408,34 @@ public class MySolver {
 
     private void regretConstruct(Solution solution, Set<Integer> nodePair) {
 
+    }
+
+    private void validation(Solution sol) {
+        List<Route> routes = sol.getRoutes();
+        double totalDist = 0;
+        double totalPenalty = 0;
+        for (Route route : routes) {
+            double dist = 0;
+            double penalty = 0;
+            double time = 0;
+            List<Node> routeNodes = route.getNodes();
+            for (int i = 1; i < routeNodes.size(); i++) {
+                Node prevNode = routeNodes.get(i - 1);
+                Node node = routeNodes.get(i);
+                time = Math.max(node.getTw1(), prevNode.gets() + time + Utils.calculateDistance(prevNode, node));
+                if (!Utils.doubleEqual(time, node.getT())) throw new IllegalArgumentException("Wrong with time.");
+                double tempPenalty = Math.max(0, time - node.getTw2());
+                if (!Utils.doubleEqual(tempPenalty, node.getDL())) throw new IllegalArgumentException("Wrong penalty");
+                penalty += tempPenalty;
+                dist += Utils.calculateDistance(prevNode, node);
+            }
+            if (!Utils.doubleEqual(dist, route.getDist())) throw new IllegalArgumentException("Wrong route distance");
+//            System.out.println(penalty + " " + route.getPenalty());
+            if (!Utils.doubleEqual(penalty, route.getPenalty())) throw new IllegalArgumentException("Wrong route penalty");
+            totalDist += dist;
+            totalPenalty += penalty;
+        }
+        if (!Utils.doubleEqual(totalDist, sol.getTotalDist())) throw new IllegalArgumentException("Wrong solution distance");
+        if (!Utils.doubleEqual(totalPenalty, sol.getTotalPenalty())) throw new IllegalArgumentException("Wrong solution penalty");
     }
 }
