@@ -18,7 +18,7 @@ public class Main {
         String dataDir = "data\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
         String resDirOPL = "res\\opl\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
         String resDirHEU = "res\\heuristics\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
-//
+
 //        List<String> files = Utils.fileListNoExtension(dataDir);
 //
 //        for (String filename : files) {
@@ -29,13 +29,23 @@ public class Main {
 ////            Visualizer visualizer = new Visualizer(solver.getSolution());
 //        }
 
-        String filename = "lc101";
+        String filename = "lr102";
 
         InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
-        MySolver mySolver = new MySolver(inputParam);
+        MySolver mySolver = new MySolver(inputParam, "random", "best");
         Solution sol = mySolver.solve();
         System.out.println(sol.trace());
         System.out.println(sol.objective());
         Visualizer visualizer = new Visualizer(sol);
+
+//        List<String> files = Utils.fileListNoExtension(dataDir);
+//
+//        for (String filename : files) {
+//            InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
+//            Solver solver = new Solver(inputParam, dataDir, filename);
+//            solver.solve();
+//            solver.validateAndSaveToFile(resDirOPL, filename);
+////            Visualizer visualizer = new Visualizer(solver.getSolution());
+//        }
     }
 }

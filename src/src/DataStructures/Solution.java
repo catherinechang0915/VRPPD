@@ -1,5 +1,7 @@
 package src.DataStructures;
 
+import src.Utils;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -65,6 +67,10 @@ public class Solution {
         return sb.toString();
     }
 
+    public void writeToFile(String filename) {
+        Utils.writeToFile(sol.toString(), filename);
+    }
+
     public List<Route> getRoutes() {
         return sol;
     }
@@ -83,6 +89,10 @@ public class Solution {
 
     public void setTotalPenalty(double totalPenalty) {
         this.totalPenalty = totalPenalty;
+    }
+
+    public void setTimeElapsed(long timeElapsed) {
+        this.timeElapsed = timeElapsed;
     }
 
     public double getObjective(double alpha, double beta) {

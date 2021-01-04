@@ -3,34 +3,55 @@ package src;
 import javafx.util.Pair;
 import src.DataStructures.*;
 
+import javax.xml.bind.annotation.XmlInlineBinaryData;
 import java.util.*;
 
 public class MySolver {
 
     private InputParam inputParam;
+    private String destroyOperator;
+    private String constructOperator;
 
-    public MySolver(InputParam inputParam) {
+    public MySolver(InputParam inputParam, String destroyOperator, String constructOperator) {
         this.inputParam = inputParam;
+        this.destroyOperator = destroyOperator;
+        this.constructOperator = constructOperator;
     }
 
     public Solution solve() {
-        int MAX_ITER = 1000;
+        int MAX_ITER = 10000;
         int q = (int) (0.1 * inputParam.getN());
 
+        long startTime = System.currentTimeMillis();
         Solution sol = initialSolutionConstruction();
+        Solution bestSol = sol;
 
-        Random gen = new Random(1);
-
+        Set<Integer> nodePair = null;
         for (int i = 0; i < MAX_ITER; i++) {
-            Set<Integer> nodePair = generateNodePair(q, gen.nextInt(100));
-            randomDestroy(sol, nodePair);
-            System.out.println("Iter" + i);
-            System.out.println("\tDestroy");
-            validation(sol);
-            bestConstruct(sol, nodePair);
-            System.out.println("\tConstruct");
-            validation(sol);
+            // Destroy
+            switch (destroyOperator) {
+                case "random":
+                    nodePair = generateNodePairRandom(q);
+                    break;
+                case "worst":
+                    nodePair = generateNodePairWorst(q);
+                    break;
+            }
+            destroy(sol, nodePair);
+//            validation(sol);
+
+            // Construct
+            switch (constructOperator) {
+                case "best":
+                    bestConstruct(sol, nodePair);
+                    break;
+                case "regret":
+                    regretConstruct(sol, nodePair);
+                    break;
+            }
+//            validation(sol);
         }
+        sol.setTimeElapsed(System.currentTimeMillis() - startTime);
         return sol;
     }
 
@@ -39,7 +60,7 @@ public class MySolver {
      * @param q number of requests to be removed each iteration
      * @return request set
      */
-    private Set<Integer> generateNodePair(int q) {
+    private Set<Integer> generateNodePairRandom(int q) {
         int N = inputParam.getN();
         Set<Integer> nodePair = new HashSet<>();
         for (int k = 0; k < q; k++) {
@@ -52,7 +73,14 @@ public class MySolver {
         return nodePair;
     }
 
-    private Set<Integer> generateNodePair(int q, int seed) {
+    private Set<Integer> generateNodePairWorst(int q) {
+        return null;
+    }
+
+    /**
+     * For debug use, generate nodePair with random seed
+     */
+    private Set<Integer> generateNodePairRandom(int q, int seed) {
         Random generator = new Random(seed);
         int N = inputParam.getN();
         Set<Integer> nodePair = new HashSet<>();
@@ -66,6 +94,11 @@ public class MySolver {
         return nodePair;
     }
 
+    /**
+     * Construct initial feasible set of routes from input param, the algorithm is greedily add the node
+     * with minimum objective increase
+     * @return initial solution
+     */
     private Solution initialSolutionConstruction() {
         List<Route> routes = new LinkedList<>();
         double totalDistance = 0;
@@ -88,6 +121,12 @@ public class MySolver {
         return new Solution(routes, totalDistance, totalDelay);
     }
 
+    /**
+     * Construct one feasible route and remove used nodes from nodeNotProcessed
+     * @param routeCount route index in solution
+     * @param nodeNotProcessed Set of nodes to be selected from for construction
+     * @return one new feasible route
+     */
     private Route initialRouteConstruction(int routeCount, Set<Integer> nodeNotProcessed) {
         double[][] distanceMatrix = inputParam.getDistanceMatrix();
         Node[] nodes = inputParam.getNodes();
@@ -105,37 +144,29 @@ public class MySolver {
 
         while (true) {
 
-            int nodeIndexToInsert = -1;
-            int pIndexToInsert = -1;
-            int dIndexToInsert = -1;
+            InsertPosition minInsertPosition = null;
             double minObjectiveIncrease = Double.MAX_VALUE;
-            double minDistIncrease = Double.MAX_VALUE;
-            double minPenaltyIncrease = Double.MAX_VALUE;
+
 
             for (int nodeIndex : nodeNotProcessed) {
                 for (int pIndex = 1; pIndex < routeNodes.size(); pIndex++) {
                     for (int dIndex = pIndex; dIndex < routeNodes.size(); dIndex++) {
-                        Pair<Double, Double> objectivePairIncrease
-                                 = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
-                        if (objectivePairIncrease == null) continue; // infeasible
-                        double objectiveIncrese = inputParam.getAlpha() * objectivePairIncrease.getKey()
-                                + inputParam.getBeta() * objectivePairIncrease.getValue();
-                        if (objectiveIncrese < minObjectiveIncrease) {
-                            minObjectiveIncrease = objectiveIncrese;
-                            nodeIndexToInsert = nodeIndex;
-                            minDistIncrease = objectivePairIncrease.getKey();
-                            minPenaltyIncrease = objectivePairIncrease.getValue();
-                            pIndexToInsert = pIndex;
-                            dIndexToInsert = dIndex;
+                        InsertPosition pos = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
+                        if (pos == null) continue; // infeasible
+                        double objectiveIncrease = inputParam.getAlpha() * pos.distIncrease
+                                + inputParam.getBeta() * pos.penaltyIncrease;
+                        if (objectiveIncrease < minObjectiveIncrease) {
+                            minObjectiveIncrease = objectiveIncrease;
+                            minInsertPosition = pos;
                         }
                     }
                 }
             }
-            if (nodeIndexToInsert == -1) break; // no feasible position to insert on this route
-            nodeInsertion(route, nodeIndexToInsert, pIndexToInsert, dIndexToInsert);
-            nodeNotProcessed.remove(nodeIndexToInsert);
-            dist += minDistIncrease;
-            penalty += minPenaltyIncrease;
+            if (minInsertPosition == null) break; // no feasible position to insert on this route
+            nodeInsertion(minInsertPosition);
+            nodeNotProcessed.remove(minInsertPosition.nodeIndex);
+            dist += minInsertPosition.distIncrease;
+            penalty += minInsertPosition.penaltyIncrease;
         }
         route.setDist(dist);
         route.setPenalty(penalty);
@@ -150,7 +181,7 @@ public class MySolver {
      * @param dIndex delivery node insert in route at position dIndex
      * @return dist increase and penalty increase
      */
-    private Pair<Double, Double> checkNodePairInsertion(Route route, int nodeIndex, int pIndex, int dIndex) {
+    private InsertPosition checkNodePairInsertion(Route route, int nodeIndex, int pIndex, int dIndex) {
 
             List<Node> routeNodes = route.getNodes();
 
@@ -248,18 +279,21 @@ public class MySolver {
             }
 
             double penaltyIncrease = currPenalty - originalPenalty;
-            return new Pair<>(distIncrease, penaltyIncrease);
+            return new InsertPosition(pIndex, dIndex, nodeIndex, route, distIncrease, penaltyIncrease);
     }
 
     /**
      * Insert node[nodeIndex] at pIndex, node[nodeIndex + N] at dIndex
      * Update load, time after insertion position
-     * @param route route to be inserted
-     * @param nodeIndex index for node pair
-     * @param pIndex pickup node insert in route at position pIndex
-     * @param dIndex delivery node insert in route at position dIndex
+     * @param pos contains: index for node pair, pickup node insert in route at position pIndex,
+     *            delivery node insert in route at position dIndex
      */
-    private void nodeInsertion(Route route, int nodeIndex, int pIndex, int dIndex) {
+    private void nodeInsertion(InsertPosition pos) {
+        Route route = pos.route;
+        int nodeIndex = pos.nodeIndex;
+        int pIndex = pos.pIndex;
+        int dIndex = pos.dIndex;
+
         List<Node> routeNodes = route.getNodes();
         Node[] nodes = inputParam.getNodes();
         double[][] distanceMatrix = inputParam.getDistanceMatrix();
@@ -293,7 +327,7 @@ public class MySolver {
      * @param sol solution to be operated on
      * @param nodePair request set to be removed
      */
-    private void randomDestroy(Solution sol, Set<Integer> nodePair) {
+    private void destroy(Solution sol, Set<Integer> nodePair) {
         List<Route> routes = sol.getRoutes();
         for (int i = 0; i < routes.size(); i++) {
             Route route = routes.get(i);
@@ -359,57 +393,141 @@ public class MySolver {
     }
 
     /**
+     * Find the best insertion place for best and regret construct operator
+     * @param solution solution to be inserted
+     * @param nodePair nodePair(request) to be inserted
+     * @param size 1: best 2: regret
+     * @return best insertion position as InsertPosition object
+     */
+    private InsertPosition findInsertPosition(Solution solution, Set<Integer> nodePair, int size) {
+        PriorityQueue<Pair<InsertPosition, Double>> nodePQ = new PriorityQueue<>(
+                Comparator.comparingDouble(Pair::getValue));
+
+        for (int nodeIndex : nodePair) {
+            PriorityQueue<InsertPosition> pq = new PriorityQueue<>(Comparator.comparingDouble(
+                    o -> -inputParam.getAlpha() * o.distIncrease - inputParam.getBeta() * o.penaltyIncrease));
+            for (Route route : solution.getRoutes()) {
+                for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
+                    for (int dIndex = pIndex; dIndex < route.getNodes().size(); dIndex++) {
+                        InsertPosition pos = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
+                        if (pos == null) continue; // infeasible
+                        pq.add(pos);
+                        if (pq.size() > size) pq.poll();
+                    }
+                }
+            }
+            if (pq.size() >= size) {
+                if (size == 1) {
+                    InsertPosition bestPos = pq.poll();
+                    nodePQ.add(new Pair<>(bestPos, inputParam.getAlpha() * bestPos.distIncrease
+                            + inputParam.getBeta() * bestPos.penaltyIncrease));
+                } else if (size == 2) {
+                    InsertPosition secondBestPos = pq.poll();
+                    InsertPosition bestPos = pq.poll();
+                    nodePQ.add(new Pair<>(bestPos, inputParam.getAlpha() * (bestPos.distIncrease - secondBestPos.distIncrease)
+                            + inputParam.getBeta() * (bestPos.penaltyIncrease - secondBestPos.penaltyIncrease)));
+                }
+            }
+        }
+
+
+        return nodePQ.poll().getKey();
+    }
+
+//    /**
+//     * Construct Operator: insert at position with minimum objective increase
+//     * @param solution solution to be modified
+//     * @param nodePair node index pairs removed to be inserted
+//     */
+//    private void bestConstruct(Solution solution, Set<Integer> nodePair) {
+//        while (true) {
+//            Route minRoute = null;
+//            InsertPosition minPos = null;
+//            int minNodeIndex = -1;
+//            int pIndexToInsert = -1;
+//            int dIndexToInsert = -1;
+//            double minObjectiveIncrease = Double.MAX_VALUE;
+//            double minDistIncrease = Double.MAX_VALUE;
+//            double minPenaltyIncrease = Double.MAX_VALUE;
+//            for (int nodeIndex : nodePair) {
+//                for (Route route : solution.getRoutes()) {
+//                    for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
+//                        for (int dIndex = pIndex; dIndex < route.getNodes().size(); dIndex++) {
+//                            InsertPosition pos = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
+//                            if (pos == null) continue; // infeasible
+//                            double objectiveIncrease = inputParam.getAlpha() * pos.distIncrease
+//                                    + inputParam.getBeta() * pos.distIncrease;
+//                            if (objectiveIncrease < minObjectiveIncrease) {
+//                                minObjectiveIncrease = objectiveIncrease;
+//                                minRoute = route;
+//                                minNodeIndex = nodeIndex;
+//                                minDistIncrease = pos.distIncrease;
+//                                minPenaltyIncrease = pos.penaltyIncrease;
+//                                pIndexToInsert = pIndex;
+//                                dIndexToInsert = dIndex;
+//                                minPos = pos;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            if (minRoute == null) {
+//                throw new NullPointerException("No feasible insertion");
+//            }
+//            nodeInsertion(minPos);
+//            minRoute.setDist(minRoute.getDist() + minDistIncrease);
+//            minRoute.setPenalty(minRoute.getPenalty() + minPenaltyIncrease);
+//            solution.setTotalDist(solution.getTotalDist() + minDistIncrease);
+//            solution.setTotalPenalty(solution.getTotalPenalty() + minPenaltyIncrease);
+//
+//            nodePair.remove(minNodeIndex);
+//            if (nodePair.size() == 0) break;
+//        }
+//    }
+
+    /**
      * Construct Operator: insert at position with minimum objective increase
      * @param solution solution to be modified
      * @param nodePair node index pairs removed to be inserted
      */
     private void bestConstruct(Solution solution, Set<Integer> nodePair) {
-        try {
-            for (int nodeIndex : nodePair) {
-                Route minRoute = null;
-                int pIndexToInsert = -1;
-                int dIndexToInsert = -1;
-                double minObjectiveIncrease = Double.MAX_VALUE;
-                double minDistIncrease = Double.MAX_VALUE;
-                double minPenaltyIncrease = Double.MAX_VALUE;
-                for (Route route : solution.getRoutes()) {
-                    for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
-                        for (int dIndex = pIndex; dIndex < route.getNodes().size(); dIndex++) {
-                            Pair<Double, Double> objectivePairIncrease
-                                    = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
-                            if (objectivePairIncrease == null) continue; // infeasible
-                            double objectiveIncrese = inputParam.getAlpha() * objectivePairIncrease.getKey()
-                                    + inputParam.getBeta() * objectivePairIncrease.getValue();
-                            if (objectiveIncrese < minObjectiveIncrease) {
-                                minObjectiveIncrease = objectiveIncrese;
-                                minRoute = route;
-                                minDistIncrease = objectivePairIncrease.getKey();
-                                minPenaltyIncrease = objectivePairIncrease.getValue();
-                                pIndexToInsert = pIndex;
-                                dIndexToInsert = dIndex;
-                            }
-                        }
-                    }
-                }
-                if (minRoute == null) {
-                    throw new NullPointerException("No feasible insertion");
-                }
-                nodeInsertion(minRoute, nodeIndex, pIndexToInsert, dIndexToInsert);
-                minRoute.setDist(minRoute.getDist() + minDistIncrease);
-                minRoute.setPenalty(minRoute.getPenalty() + minPenaltyIncrease);
-                solution.setTotalDist(solution.getTotalDist() + minDistIncrease);
-                solution.setTotalPenalty(solution.getTotalPenalty() + minPenaltyIncrease);
+        while (true) {
+            InsertPosition pos = findInsertPosition(solution, nodePair, 1);
+            if (pos == null) {
+                throw new NullPointerException("No feasible insertion");
             }
-        } catch (Exception e){
-            e.printStackTrace();
-            System.exit(1);
+            nodeInsertion(pos);
+            pos.route.setDist(pos.route.getDist() + pos.distIncrease);
+            pos.route.setPenalty(pos.route.getPenalty() + pos.penaltyIncrease);
+            solution.setTotalDist(solution.getTotalDist() + pos.distIncrease);
+            solution.setTotalPenalty(solution.getTotalPenalty() + pos.penaltyIncrease);
+
+            nodePair.remove(pos.nodeIndex);
+            if (nodePair.size() == 0) break;
         }
     }
 
     private void regretConstruct(Solution solution, Set<Integer> nodePair) {
+        while (true) {
+            InsertPosition pos = findInsertPosition(solution, nodePair, 2);
+            if (pos == null) {
+                throw new NullPointerException("No feasible insertion");
+            }
+            nodeInsertion(pos);
+            pos.route.setDist(pos.route.getDist() + pos.distIncrease);
+            pos.route.setPenalty(pos.route.getPenalty() + pos.penaltyIncrease);
+            solution.setTotalDist(solution.getTotalDist() + pos.distIncrease);
+            solution.setTotalPenalty(solution.getTotalPenalty() + pos.penaltyIncrease);
 
+            nodePair.remove(pos.nodeIndex);
+            if (nodePair.size() == 0) break;
+        }
     }
 
+    /**
+     * For debug use, recalculate and compare the information along the route
+     * @param sol Solution to be verified
+     */
     private void validation(Solution sol) {
         List<Route> routes = sol.getRoutes();
         double totalDist = 0;
@@ -437,5 +555,23 @@ public class MySolver {
         }
         if (!Utils.doubleEqual(totalDist, sol.getTotalDist())) throw new IllegalArgumentException("Wrong solution distance");
         if (!Utils.doubleEqual(totalPenalty, sol.getTotalPenalty())) throw new IllegalArgumentException("Wrong solution penalty");
+    }
+
+    class InsertPosition {
+        int pIndex;
+        int dIndex;
+        int nodeIndex;
+        Route route;
+        double distIncrease;
+        double penaltyIncrease;
+
+        InsertPosition(int pIndex, int dIndex, int nodeIndex, Route route, double distIncrease, double penaltyIncrease) {
+            this.pIndex = pIndex;
+            this.dIndex = dIndex;
+            this.nodeIndex = nodeIndex;
+            this.route = route;
+            this.distIncrease = distIncrease;
+            this.penaltyIncrease = penaltyIncrease;
+        }
     }
 }
