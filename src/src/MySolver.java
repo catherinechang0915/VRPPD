@@ -26,8 +26,11 @@ public class MySolver {
         Solution sol = initialSolutionConstruction();
         Solution bestSol = sol;
 
-        Set<Integer> nodePair = null;
+        Random random = new Random(100);
+
+        List<Integer> nodePair = null;
         for (int i = 0; i < MAX_ITER; i++) {
+            int rand = (int)(random.nextDouble() * 53) + 1;
             // Destroy
             switch (destroyOperator) {
                 case "random":
@@ -36,9 +39,13 @@ public class MySolver {
                 case "worst":
                     nodePair = generateNodePairWorst(q);
                     break;
+                case "shaw":
+                    nodePair = generateNodePairShaw(q);
+                    break;
             }
+//            System.out.println(i + " " + nodePair);
             destroy(sol, nodePair);
-//            validation(sol);
+            validation(sol);
 
             // Construct
             switch (constructOperator) {
@@ -49,7 +56,8 @@ public class MySolver {
                     regretConstruct(sol, nodePair);
                     break;
             }
-//            validation(sol);
+//            System.out.println(sol.getVehicleNumber());
+            validation(sol);
         }
         sol.setTimeElapsed(System.currentTimeMillis() - startTime);
         return sol;
@@ -60,9 +68,9 @@ public class MySolver {
      * @param q number of requests to be removed each iteration
      * @return request set
      */
-    private Set<Integer> generateNodePairRandom(int q) {
+    private List<Integer> generateNodePairRandom(int q) {
         int N = inputParam.getN();
-        Set<Integer> nodePair = new HashSet<>();
+        List<Integer> nodePair = new LinkedList<>();
         for (int k = 0; k < q; k++) {
             int rand = (int)(Math.random() * N) + 1;
             while (nodePair.contains(rand)) {
@@ -73,17 +81,70 @@ public class MySolver {
         return nodePair;
     }
 
-    private Set<Integer> generateNodePairWorst(int q) {
+    private List<Integer> generateNodePairWorst(int q) {
         return null;
+    }
+
+    private List<Integer> generateNodePairShaw(int q, int rand) {
+        int N = inputParam.getN();
+        Node[] nodes = inputParam.getNodes();
+        List<Integer> nodePair = new LinkedList<>();
+        nodePair.add(rand);
+        while (nodePair.size() < q) {
+            int nodeNum = nodePair.get((int)(Math.random() * nodePair.size()));
+            PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingDouble(
+                    o ->  9 * (Utils.calculateDistance(nodes[o], nodes[nodeNum])
+                            + Utils.calculateDistance(nodes[o + N], nodes[nodeNum + N]))
+                            + 3 * (Math.abs(nodes[o].getT() - nodes[nodeNum].getT())
+                            + Math.abs(nodes[o + N].getT() - nodes[nodeNum + N].getT()))
+                            + 2 * Math.abs(nodes[o].getq() - nodes[nodeNum].getq())
+            ));
+            for (int i = 1; i < N; i++) {
+                if (!nodePair.contains(i)) pq.add(i);
+            }
+//            double temp = (int)(Math.random() * );
+//            for (int i = 0; i < temp; i++) {
+//                pq.poll();
+//            }
+            nodePair.add(pq.poll());
+        }
+        return nodePair;
+    }
+
+    private List<Integer> generateNodePairShaw(int q) {
+        int N = inputParam.getN();
+        Node[] nodes = inputParam.getNodes();
+        List<Integer> nodePair = new LinkedList<>();
+        int rand = (int)(Math.random() * N) + 1;
+        nodePair.add(rand);
+        while (nodePair.size() < q) {
+            int nodeNum = nodePair.get((int)(Math.random() * nodePair.size()));
+            PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingDouble(
+                    o ->  9 * (Utils.calculateDistance(nodes[o], nodes[nodeNum])
+                            + Utils.calculateDistance(nodes[o + N], nodes[nodeNum + N]))
+                            + 3 * (Math.abs(nodes[o].getT() - nodes[nodeNum].getT())
+                            + Math.abs(nodes[o + N].getT() - nodes[nodeNum + N].getT()))
+                            + 2 * Math.abs(nodes[o].getq() - nodes[nodeNum].getq())
+            ));
+            for (int i = 1; i < N; i++) {
+                if (!nodePair.contains(i)) pq.add(i);
+            }
+            double temp = (int)(Math.random() * 3);
+            for (int i = 0; i < temp; i++) {
+                pq.poll();
+            }
+            nodePair.add(pq.poll());
+        }
+        return nodePair;
     }
 
     /**
      * For debug use, generate nodePair with random seed
      */
-    private Set<Integer> generateNodePairRandom(int q, int seed) {
+    private List<Integer> generateNodePairRandom(int q, int seed) {
         Random generator = new Random(seed);
         int N = inputParam.getN();
-        Set<Integer> nodePair = new HashSet<>();
+        List<Integer> nodePair = new LinkedList<>();
         for (int k = 0; k < q; k++) {
             int rand = (int)(generator.nextDouble() * N) + 1;
             while (nodePair.contains(rand)) {
@@ -327,7 +388,7 @@ public class MySolver {
      * @param sol solution to be operated on
      * @param nodePair request set to be removed
      */
-    private void destroy(Solution sol, Set<Integer> nodePair) {
+    private void destroy(Solution sol, List<Integer> nodePair) {
         List<Route> routes = sol.getRoutes();
         for (int i = 0; i < routes.size(); i++) {
             Route route = routes.get(i);
@@ -399,7 +460,7 @@ public class MySolver {
      * @param size 1: best 2: regret
      * @return best insertion position as InsertPosition object
      */
-    private InsertPosition findInsertPosition(Solution solution, Set<Integer> nodePair, int size) {
+    private InsertPosition findInsertPosition(Solution solution, List<Integer> nodePair, int size) {
         PriorityQueue<Pair<InsertPosition, Double>> nodePQ = new PriorityQueue<>(
                 Comparator.comparingDouble(Pair::getValue));
 
@@ -434,63 +495,12 @@ public class MySolver {
         return nodePQ.poll().getKey();
     }
 
-//    /**
-//     * Construct Operator: insert at position with minimum objective increase
-//     * @param solution solution to be modified
-//     * @param nodePair node index pairs removed to be inserted
-//     */
-//    private void bestConstruct(Solution solution, Set<Integer> nodePair) {
-//        while (true) {
-//            Route minRoute = null;
-//            InsertPosition minPos = null;
-//            int minNodeIndex = -1;
-//            int pIndexToInsert = -1;
-//            int dIndexToInsert = -1;
-//            double minObjectiveIncrease = Double.MAX_VALUE;
-//            double minDistIncrease = Double.MAX_VALUE;
-//            double minPenaltyIncrease = Double.MAX_VALUE;
-//            for (int nodeIndex : nodePair) {
-//                for (Route route : solution.getRoutes()) {
-//                    for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
-//                        for (int dIndex = pIndex; dIndex < route.getNodes().size(); dIndex++) {
-//                            InsertPosition pos = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
-//                            if (pos == null) continue; // infeasible
-//                            double objectiveIncrease = inputParam.getAlpha() * pos.distIncrease
-//                                    + inputParam.getBeta() * pos.distIncrease;
-//                            if (objectiveIncrease < minObjectiveIncrease) {
-//                                minObjectiveIncrease = objectiveIncrease;
-//                                minRoute = route;
-//                                minNodeIndex = nodeIndex;
-//                                minDistIncrease = pos.distIncrease;
-//                                minPenaltyIncrease = pos.penaltyIncrease;
-//                                pIndexToInsert = pIndex;
-//                                dIndexToInsert = dIndex;
-//                                minPos = pos;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            if (minRoute == null) {
-//                throw new NullPointerException("No feasible insertion");
-//            }
-//            nodeInsertion(minPos);
-//            minRoute.setDist(minRoute.getDist() + minDistIncrease);
-//            minRoute.setPenalty(minRoute.getPenalty() + minPenaltyIncrease);
-//            solution.setTotalDist(solution.getTotalDist() + minDistIncrease);
-//            solution.setTotalPenalty(solution.getTotalPenalty() + minPenaltyIncrease);
-//
-//            nodePair.remove(minNodeIndex);
-//            if (nodePair.size() == 0) break;
-//        }
-//    }
-
     /**
      * Construct Operator: insert at position with minimum objective increase
      * @param solution solution to be modified
      * @param nodePair node index pairs removed to be inserted
      */
-    private void bestConstruct(Solution solution, Set<Integer> nodePair) {
+    private void bestConstruct(Solution solution, List<Integer> nodePair) {
         while (true) {
             InsertPosition pos = findInsertPosition(solution, nodePair, 1);
             if (pos == null) {
@@ -502,12 +512,18 @@ public class MySolver {
             solution.setTotalDist(solution.getTotalDist() + pos.distIncrease);
             solution.setTotalPenalty(solution.getTotalPenalty() + pos.penaltyIncrease);
 
-            nodePair.remove(pos.nodeIndex);
+            nodePair.remove((Integer) pos.nodeIndex);
             if (nodePair.size() == 0) break;
         }
     }
 
-    private void regretConstruct(Solution solution, Set<Integer> nodePair) {
+    /**
+     * Construct Operator: insert at position with minimum difference in best and
+     * second best objective increase
+     * @param solution solution to be modified
+     * @param nodePair node index pairs removed to be inserted
+     */
+    private void regretConstruct(Solution solution, List<Integer> nodePair) {
         while (true) {
             InsertPosition pos = findInsertPosition(solution, nodePair, 2);
             if (pos == null) {
@@ -519,7 +535,7 @@ public class MySolver {
             solution.setTotalDist(solution.getTotalDist() + pos.distIncrease);
             solution.setTotalPenalty(solution.getTotalPenalty() + pos.penaltyIncrease);
 
-            nodePair.remove(pos.nodeIndex);
+            nodePair.remove((Integer) pos.nodeIndex);
             if (nodePair.size() == 0) break;
         }
     }

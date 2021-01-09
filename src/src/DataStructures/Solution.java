@@ -35,9 +35,14 @@ public class Solution {
      */
     public String trace() {
         StringBuilder sb = new StringBuilder();
+        int count = 0;
         for (Route r : sol) {
-            if (r.getNodes().size() != 2) sb.append(r.trace()).append("\n");
+            if (r.getNodes().size() != 2) {
+                sb.append(r.trace()).append("\n");
+                count++;
+            }
         }
+        sb.append("Vehicle used: ").append(count);
         return sb.toString();
     }
 
@@ -57,13 +62,18 @@ public class Solution {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        int count = 0;
 //        sb.append("Objective Value: ").append(objective).append("\n");
         sb.append("Total Distance Traveled: ").append(totalDist).append("\n");
         sb.append("Total Penalty of Delay: ").append(totalPenalty).append("\n");
         sb.append("Time Elasped: ").append(timeElapsed).append("\n");
         for (Route r : sol) {
-            if (r.getNodes().size() != 2) sb.append(r.toString());
+            if (r.getNodes().size() != 2) {
+                sb.append(r.toString());
+                count++;
+            }
         }
+        sb.append("Vehicle used: ").append(count);
         return sb.toString();
     }
 
@@ -81,6 +91,20 @@ public class Solution {
 
     public double getTotalPenalty() {
         return totalPenalty;
+    }
+
+    public long getTimeElapsed() {
+        return timeElapsed;
+    }
+
+    public int getVehicleNumber() {
+        int count = 0;
+        for (Route r : sol) {
+            if (r.getNodes().size() != 2) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void setTotalDist(double totalDist) {

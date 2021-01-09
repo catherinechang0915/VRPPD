@@ -29,14 +29,23 @@ public class Main {
 ////            Visualizer visualizer = new Visualizer(solver.getSolution());
 //        }
 
-        String filename = "lr102";
+        String filename = "lr101";
 
-        InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
-        MySolver mySolver = new MySolver(inputParam, "random", "best");
-        Solution sol = mySolver.solve();
-        System.out.println(sol.trace());
-        System.out.println(sol.objective());
-        Visualizer visualizer = new Visualizer(sol);
+        double obj = 0, t = 0;
+        int nn = 5;
+        for (int i = 0; i < nn; i++) {
+            InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
+            MySolver mySolver = new MySolver(inputParam, "shaw", "regret");
+            Solution sol = mySolver.solve();
+            System.out.println(sol.trace());
+            System.out.println(sol.objective());
+            t += sol.getTimeElapsed();
+            obj += sol.getObjective(inputParam.getAlpha(), inputParam.getBeta());
+//            Visualizer visualizer = new Visualizer(sol);
+        }
+        System.out.println("AVG Time" + t / nn);
+        System.out.println("AVG Obj " + obj / nn);
+
 
 //        List<String> files = Utils.fileListNoExtension(dataDir);
 //

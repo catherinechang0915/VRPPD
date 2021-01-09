@@ -41,7 +41,7 @@ public class DataGenerator {
             System.exit(1);
         }
 
-        Map<String, Integer> kMap = Utils.getVehicleNumber(inputDir + "vehicle.txt");
+//        Map<String, Integer> kMap = Utils.getVehicleNumber(inputDir + "vehicle.txt");
         for (String file : filenames) {
             if (!file.equals("vehicle.txt")) {
 //                generateFile(n, kMap.get(file), memberPercent, alpha, beta,
