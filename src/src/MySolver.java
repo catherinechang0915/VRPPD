@@ -19,6 +19,7 @@ public class MySolver {
     }
 
     public Solution solve() {
+        double alpha = inputParam.getAlpha(), beta = inputParam.getBeta();
         int MAX_ITER = 10000;
         int q = (int) (0.1 * inputParam.getN());
 
@@ -26,25 +27,32 @@ public class MySolver {
         Solution sol = initialSolutionConstruction();
         Solution bestSol = sol;
 
+        double T = 0.025;
+        double coolingRate = T / MAX_ITER;
+
         List<Integer> nodePair = null;
+        List<InsertPosition> positions = null;
+        Pair<List<Integer>, List<InsertPosition>> temp = null;
         for (int i = 0; i < MAX_ITER; i++) {
+            double prevObjective = sol.getObjective(alpha, beta);
             // Destroy
             switch (destroyOperator) {
                 case "random":
                     nodePair = generateNodePairRandom(q);
-                    destroy(sol, nodePair);
+                    positions = destroy(sol, nodePair, true);
                     break;
                 case "worst":
                     // For this operator, request is removed one by one
-                    nodePair = worstDestroy(q, sol);
+                    temp = worstDestroy(q, sol);
+                    nodePair = temp.getKey();
+                    positions = temp.getValue();
                     break;
                 case "shaw":
                     nodePair = generateNodePairShaw(q);
-                    destroy(sol, nodePair);
+                    positions = destroy(sol, nodePair, true);
                     break;
             }
-
-//            validation(sol);
+            validation(sol);
 
             // Construct
             switch (constructOperator) {
@@ -63,10 +71,23 @@ public class MySolver {
                 case "regretM":
                     regretConstruct(sol, nodePair, -1);
             }
-//            validation(sol);
+            validation(sol);
+
+            if (sol.getObjective(alpha, beta) < bestSol.getObjective(alpha, beta)) {
+                bestSol = sol;
+            }
+//            if (sol.getObjective(alpha, beta) >= bestSol.getObjective(alpha, beta)
+//                    && T < (sol.getObjective(alpha, beta) - prevObjective) / prevObjective) {
+            if (T < (sol.getObjective(alpha, beta) - bestSol.getObjective(alpha, beta)) / bestSol.getObjective(alpha, beta)) {
+                // not accept if worse than global and not meeting criteria, rollback
+                destroy(sol, nodePair, false);
+                recover(sol, nodePair, positions);
+                System.out.println("not accepted");
+            }
+            T -= coolingRate;
         }
         sol.setTimeElapsed(System.currentTimeMillis() - startTime);
-        return sol;
+        return bestSol;
     }
 
     /**
@@ -87,14 +108,22 @@ public class MySolver {
         return nodePair;
     }
 
-    private List<Integer> worstDestroy(int q, Solution solution) {
+    /**
+     * Remove requests that would result in maximum objective decrease, and update the solution
+     * @param q number of requests to be removed each iteration
+     * @param solution solution contains requests to be removed
+     * @return removed request set and corresponding positions
+     */
+    private Pair<List<Integer>, List<InsertPosition>> worstDestroy(int q, Solution solution) {
         List<Integer> nodePair = new LinkedList<>();
+        List<InsertPosition> positions = new LinkedList<>();
         while (nodePair.size() < q) {
             InsertPosition pos = findDestroyPosition(solution, 5);
             if (pos == null) {
                 throw new NullPointerException("Wrong code. Should always have feasible "
                         + "removal position in worst destroy operator");
             }
+            positions.add(0, pos);
             nodeRemove(pos);
             pos.route.setDist(pos.route.getDist() + pos.distIncrease);
             pos.route.setPenalty(pos.route.getPenalty() + pos.penaltyIncrease);
@@ -103,7 +132,7 @@ public class MySolver {
 
             nodePair.add(pos.nodeIndex);
         }
-        return nodePair;
+        return new Pair<>(nodePair, positions);
     }
 
     /**
@@ -538,20 +567,29 @@ public class MySolver {
      * Destroy Operator: remove nodes in nodePair
      * @param sol solution to be operated on
      * @param nodePair request set to be removed
+     * @return a copy of the original solution
      */
-    private void destroy(Solution sol, List<Integer> nodePair) {
+    private List<InsertPosition> destroy(Solution sol, List<Integer> nodePair, boolean update) {
+        Node[] nodes = inputParam.getNodes();
         List<Route> routes = sol.getRoutes();
+        List<InsertPosition> positions = new LinkedList<>();
         for (int i = 0; i < routes.size(); i++) {
             Route route = routes.get(i);
             List<Node> routeNodes = route.getNodes();
-            for (Node node : new LinkedList<>(routeNodes)) {
-                if (nodePair.contains(node.getIndex())
-                        || nodePair.contains(node.getIndex() - inputParam.getN())) {
-                    routeNodes.remove(node);
+
+            for (Integer nodeIndex : nodePair) {
+                Node pNode = nodes[nodeIndex];
+                Node dNode = nodes[nodeIndex + inputParam.getN()];
+                if (routeNodes.contains(pNode)) {
+                    positions.add(0, new InsertPosition(routeNodes.indexOf(pNode), routeNodes.indexOf(dNode),
+                            nodeIndex, route, -1, -1));
+                    routeNodes.remove(pNode);
+                    routeNodes.remove(dNode);
                 }
             }
         }
-        updateSolution(sol);
+        if (update) updateSolution(sol);
+        return positions;
     }
 
     /**
@@ -668,7 +706,8 @@ public class MySolver {
     /**
      * Find the best destroy place (maximum reduce for objective) for worst destroy construct operator
      * @param solution solution to be inserted
-     * @return best destroy position as InsertPosition object
+     * @param size determine the randomness
+     * @return random choice among best size destroy position as InsertPosition object
      */
     private InsertPosition findDestroyPosition(Solution solution, int size) {
         PriorityQueue<InsertPosition> pq = new PriorityQueue<>(Comparator.comparingDouble(
@@ -709,6 +748,27 @@ public class MySolver {
             nodePair.remove((Integer) pos.nodeIndex);
             if (nodePair.size() == 0) break;
         }
+    }
+
+    /**
+     * Reinsert the removed requests back to their original position, the order of InsertionPosition and
+     * the order to insert pNode and dNode are very important
+     * @param solution solution with requests removed
+     * @param nodePair requests to be inserted back
+     * @param positions original request positions in the route
+     */
+    private void recover(Solution solution, List<Integer> nodePair, List<InsertPosition> positions) {
+        Node[] nodes = inputParam.getNodes();
+        int N = inputParam.getN();
+        for (InsertPosition pos : positions) {
+            List<Node> routeNodes = pos.route.getNodes();
+            int pIndex = pos.pIndex;
+            int dIndex = pos.dIndex;
+            int nodeIndex = pos.nodeIndex;
+            routeNodes.add(pIndex, nodes[nodeIndex]);
+            routeNodes.add(dIndex, nodes[nodeIndex + N]);
+        }
+        updateSolution(solution);
     }
 
     /**

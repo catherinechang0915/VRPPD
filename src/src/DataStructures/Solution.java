@@ -7,10 +7,10 @@ import java.util.List;
 
 public class Solution {
 
-    List<Route> sol;
-    long timeElapsed;
-    double totalDist;
-    double totalPenalty;
+    private List<Route> sol;
+    private long timeElapsed;
+    private double totalDist;
+    private double totalPenalty;
 
     public Solution() {
         sol = new LinkedList<>();

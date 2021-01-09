@@ -35,9 +35,9 @@ public class Main {
         int nn = 5;
         for (int i = 0; i < nn; i++) {
             InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
-            MySolver mySolver = new MySolver(inputParam, "random", "regretM");
+            MySolver mySolver = new MySolver(inputParam, "random", "regret2");
             Solution sol = mySolver.solve();
-            System.out.println(sol.trace());
+//            System.out.println(sol.trace());
             System.out.println(sol.objective());
             t += sol.getTimeElapsed();
             obj += sol.getObjective(inputParam.getAlpha(), inputParam.getBeta());
