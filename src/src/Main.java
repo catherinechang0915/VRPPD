@@ -29,13 +29,13 @@ public class Main {
 ////            Visualizer visualizer = new Visualizer(solver.getSolution());
 //        }
 
-        String filename = "lr101";
+        String filename = "lr104";
 
         double obj = 0, t = 0;
         int nn = 5;
         for (int i = 0; i < nn; i++) {
             InputParam inputParam = Utils.readParam(dataDir + filename + ".dat");
-            MySolver mySolver = new MySolver(inputParam, "shaw", "regret");
+            MySolver mySolver = new MySolver(inputParam, "random", "regretM");
             Solution sol = mySolver.solve();
             System.out.println(sol.trace());
             System.out.println(sol.objective());
