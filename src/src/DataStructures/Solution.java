@@ -2,10 +2,11 @@ package src.DataStructures;
 
 import src.Utils;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Solution {
+public class Solution implements Serializable {
 
     private List<Route> sol;
     private long timeElapsed;
@@ -62,7 +63,7 @@ public class Solution {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        int count = 0;
+        sb.append(trace()).append("\n");
 //        sb.append("Objective Value: ").append(objective).append("\n");
         sb.append("Total Distance Traveled: ").append(totalDist).append("\n");
         sb.append("Total Penalty of Delay: ").append(totalPenalty).append("\n");
@@ -70,15 +71,13 @@ public class Solution {
         for (Route r : sol) {
             if (r.getNodes().size() != 2) {
                 sb.append(r.toString());
-                count++;
             }
         }
-        sb.append("Vehicle used: ").append(count);
         return sb.toString();
     }
 
-    public void writeToFile(String filename) {
-        Utils.writeToFile(sol.toString(), filename);
+    public void writeToFile(String filename, boolean isAppend) {
+        Utils.writeToFile(this.toString(), filename, isAppend);
     }
 
     public List<Route> getRoutes() {

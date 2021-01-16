@@ -3,58 +3,58 @@ package src;
 import javafx.util.Pair;
 import src.DataStructures.*;
 
-import javax.xml.bind.annotation.XmlInlineBinaryData;
 import java.util.*;
 
-public class MySolver {
+public class MySolver implements Solver{
 
     private InputParam inputParam;
-    private String destroyOperator;
-    private String constructOperator;
+    private Solution solution;
 
-    public MySolver(InputParam inputParam, String destroyOperator, String constructOperator) {
-        this.inputParam = inputParam;
-        this.destroyOperator = destroyOperator;
-        this.constructOperator = constructOperator;
+    public MySolver(String dataDir, String dataFilename) {
+        this.inputParam = Utils.readParam(dataDir + dataFilename);
     }
 
-    public Solution solve() {
+    @Override
+    public void solve(String resDir, String resFilename) {
         double alpha = inputParam.getAlpha(), beta = inputParam.getBeta();
         int MAX_ITER = 10000;
         int q = (int) (0.1 * inputParam.getN());
 
         long startTime = System.currentTimeMillis();
         Solution sol = initialSolutionConstruction();
-        Solution bestSol = sol;
+
+        byte[] bestSol = Utils.serialize(sol);
+        double bestObj = sol.getObjective(alpha, beta);
 
         double T = 0.025;
         double coolingRate = T / MAX_ITER;
 
         List<Integer> nodePair = null;
-        List<InsertPosition> positions = null;
-        Pair<List<Integer>, List<InsertPosition>> temp = null;
+
+        byte[] prevSol = null;
         for (int i = 0; i < MAX_ITER; i++) {
-            double prevObjective = sol.getObjective(alpha, beta);
+            prevSol = Utils.serialize(sol);
+
             // Destroy
+            String destroyOperator = "shaw";
             switch (destroyOperator) {
                 case "random":
                     nodePair = generateNodePairRandom(q);
-                    positions = destroy(sol, nodePair, true);
+                    destroy(sol, nodePair);
                     break;
                 case "worst":
                     // For this operator, request is removed one by one
-                    temp = worstDestroy(q, sol);
-                    nodePair = temp.getKey();
-                    positions = temp.getValue();
+                    worstDestroy(q, sol);
                     break;
                 case "shaw":
                     nodePair = generateNodePairShaw(q);
-                    positions = destroy(sol, nodePair, true);
+                    destroy(sol, nodePair);
                     break;
             }
-            validation(sol);
+//            validation(sol);
 
             // Construct
+            String constructOperator = "regret4";
             switch (constructOperator) {
                 case "best":
                     regretConstruct(sol, nodePair, 1);
@@ -71,23 +71,34 @@ public class MySolver {
                 case "regretM":
                     regretConstruct(sol, nodePair, -1);
             }
-            validation(sol);
+//            validation(sol);
 
-            if (sol.getObjective(alpha, beta) < bestSol.getObjective(alpha, beta)) {
-                bestSol = sol;
+            if (sol.getObjective(alpha, beta) < bestObj) {
+                bestObj = sol.getObjective(alpha, beta);
+                bestSol = Utils.serialize(sol);
             }
-//            if (sol.getObjective(alpha, beta) >= bestSol.getObjective(alpha, beta)
-//                    && T < (sol.getObjective(alpha, beta) - prevObjective) / prevObjective) {
-            if (T < (sol.getObjective(alpha, beta) - bestSol.getObjective(alpha, beta)) / bestSol.getObjective(alpha, beta)) {
+
+            if (T < (sol.getObjective(alpha, beta) - bestObj) / bestObj) {
                 // not accept if worse than global and not meeting criteria, rollback
-                destroy(sol, nodePair, false);
-                recover(sol, nodePair, positions);
-                System.out.println("not accepted");
+                sol = Utils.deserialize(prevSol);
+//                System.out.println("not accepted");
             }
             T -= coolingRate;
         }
-        sol.setTimeElapsed(System.currentTimeMillis() - startTime);
-        return bestSol;
+        Solution bestToReturn = Utils.deserialize(bestSol);
+        bestToReturn.setTimeElapsed(System.currentTimeMillis() - startTime);
+        solution = bestToReturn;
+        writeToFile(resDir + resFilename);
+    }
+
+    @Override
+    public Solution getSolverSolution() {
+        return solution;
+    }
+
+    @Override
+    public double getSolverObjective() {
+        return solution.getObjective(inputParam.getAlpha(), inputParam.getBeta());
     }
 
     /**
@@ -114,7 +125,7 @@ public class MySolver {
      * @param solution solution contains requests to be removed
      * @return removed request set and corresponding positions
      */
-    private Pair<List<Integer>, List<InsertPosition>> worstDestroy(int q, Solution solution) {
+    private List<Integer> worstDestroy(int q, Solution solution) {
         List<Integer> nodePair = new LinkedList<>();
         List<InsertPosition> positions = new LinkedList<>();
         while (nodePair.size() < q) {
@@ -132,7 +143,7 @@ public class MySolver {
 
             nodePair.add(pos.nodeIndex);
         }
-        return new Pair<>(nodePair, positions);
+        return nodePair;
     }
 
     /**
@@ -567,29 +578,36 @@ public class MySolver {
      * Destroy Operator: remove nodes in nodePair
      * @param sol solution to be operated on
      * @param nodePair request set to be removed
-     * @return a copy of the original solution
      */
-    private List<InsertPosition> destroy(Solution sol, List<Integer> nodePair, boolean update) {
+    private void destroy(Solution sol, List<Integer> nodePair) {
         Node[] nodes = inputParam.getNodes();
-        List<Route> routes = sol.getRoutes();
-        List<InsertPosition> positions = new LinkedList<>();
-        for (int i = 0; i < routes.size(); i++) {
-            Route route = routes.get(i);
-            List<Node> routeNodes = route.getNodes();
-
-            for (Integer nodeIndex : nodePair) {
-                Node pNode = nodes[nodeIndex];
-                Node dNode = nodes[nodeIndex + inputParam.getN()];
-                if (routeNodes.contains(pNode)) {
-                    positions.add(0, new InsertPosition(routeNodes.indexOf(pNode), routeNodes.indexOf(dNode),
-                            nodeIndex, route, -1, -1));
-                    routeNodes.remove(pNode);
-                    routeNodes.remove(dNode);
+        List<Node> routeNodes = null;
+        for (Route route : sol.getRoutes()) {
+            routeNodes = route.getNodes();
+            for (Node node : new LinkedList<>(routeNodes)) {
+                if (nodePair.contains(node.getIndex()) || nodePair.contains(node.getIndex() - inputParam.getN())) {
+                    routeNodes.remove(node);
                 }
             }
         }
-        if (update) updateSolution(sol);
-        return positions;
+//        List<InsertPosition> positions = new LinkedList<>();
+//        for (int i = 0; i < routes.size(); i++) {
+//            Route route = routes.get(i);
+//            List<Node> routeNodes = route.getNodes();
+//
+//            for (Integer nodeIndex : nodePair) {
+//                Node pNode = nodes[nodeIndex];
+//                Node dNode = nodes[nodeIndex + inputParam.getN()];
+//                if (routeNodes.contains(pNode)) {
+////                    positions.add(0, new InsertPosition(routeNodes.indexOf(pNode), routeNodes.indexOf(dNode),
+////                            nodeIndex, route, -1, -1));
+//                    routeNodes.remove(pNode);
+//                    routeNodes.remove(dNode);
+//                }
+//            }
+//        }
+        updateSolution(sol);
+//        return positions;
     }
 
     /**
@@ -802,6 +820,10 @@ public class MySolver {
         }
         if (!Utils.doubleEqual(totalDist, sol.getTotalDist())) throw new IllegalArgumentException("Wrong solution distance");
         if (!Utils.doubleEqual(totalPenalty, sol.getTotalPenalty())) throw new IllegalArgumentException("Wrong solution penalty");
+    }
+
+    private void writeToFile(String filePath) {
+        solution.writeToFile(filePath, false);
     }
 
     class InsertPosition {

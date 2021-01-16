@@ -2,12 +2,13 @@ package src.DataStructures;
 
 import src.Utils;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * A set of nodes traversed by the same vehicle in the solution
  */
-public class Route {
+public class Route implements Serializable {
 
     private List<Node> route;
     private Vehicle vehicle;
@@ -41,9 +42,9 @@ public class Route {
         sb.append("Vehicle ").append(vehicle.getK()).append(" with capacity ")
                 .append(vehicle.getCapacity()).append("\n");
         for (int i = 0; i < route.size(); i++) {
-            sb.append(route.get(i).toString());
+            sb.append("\t\t").append(route.get(i).toString());
             if (i != route.size() - 1) {
-                sb.append("Distance between " + Utils.calculateDistance(route.get(i), route.get(i + 1))).append("\n");
+                sb.append("\tDistance between " + Utils.calculateDistance(route.get(i), route.get(i + 1))).append("\n");
             }
         }
         sb.append("\n");

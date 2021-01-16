@@ -163,23 +163,23 @@ subject to {
    }
 }
 
-execute outputresult{
-   var ofile = new IloOplOutputFile("Solution.txt",false);
-   var o1 = 0, o2 = 0, o3 = 0;
-   for (var k in vehicle){
-       ofile.writeln("vehicle " + k + ":");
-       for (var e in edge){
-           if(x[e][k] == 1){
-              ofile.writeln("travel from "+ e.node1 +" to "+e.node2 + " travels " + d[e]);
-              o1 += d[e];
-           }
-       }
-       for (var i in node) {
-         o3 += DL[i][k];
-       }
-       o2 += T[endDepot][k] - T[startDepot][k];
-   }
-   ofile.writeln("objective part 1 " + o1 + " " + alpha*o1);
-   ofile.writeln("objective part 2 " + o3 + " " + beta*o3);
+//execute outputresult{
+//   var ofile = new IloOplOutputFile("Solution.txt",false);
+//   var o1 = 0, o2 = 0, o3 = 0;
+//   for (var k in vehicle){
+//       ofile.writeln("vehicle " + k + ":");
+//       for (var e in edge){
+//           if(x[e][k] == 1){
+//              ofile.writeln("travel from "+ e.node1 +" to "+e.node2 + " travels " + d[e]);
+//              o1 += d[e];
+//           }
+//       }
+//       for (var i in node) {
+//         o3 += DL[i][k];
+//       }
+//       o2 += T[endDepot][k] - T[startDepot][k];
+//   }
+//   ofile.writeln("objective part 1 " + o1 + " " + alpha*o1);
+//   ofile.writeln("objective part 2 " + o3 + " " + beta*o3);
 //   ofile.writeln("objective part 3 " + o3 + " " + gamma*o3);
-}
+//}

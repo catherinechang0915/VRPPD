@@ -9,12 +9,7 @@ import java.util.*;
  */
 public class DataGenerator {
 
-    /**
-     *
-     * @param n number of nodes (depots not included), total n + 2 nodes
-     * @param memberPercent percentage of members
-     */
-    public DataGenerator(int n, double memberPercent, int alpha, int beta) {
+    public DataGenerator(int n, double memberPercent, double alpha, double beta, int optimalVehicle) {
         int N = -1;
         if (n % 2 != 0) {
             System.out.println("Number of nodes cannot form pairs.");
@@ -33,26 +28,36 @@ public class DataGenerator {
         }
 
         String inputDir = "raw_data\\" + "pdp_" + N + "\\";
-        String outputDir = "data\\" + "pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
-        Utils.createDirectory(outputDir);
-        List<String> filenames = Utils.fileList(inputDir);
-        if (filenames == null || filenames.size() == 0) {
+        List<String> filenames = Utils.fileListNoExtension(inputDir);
+        if (filenames.size() == 0) {
             System.out.println("No files in the directory " + inputDir + " . Data generation failed.");
             System.exit(1);
         }
 
-//        Map<String, Integer> kMap = Utils.getVehicleNumber(inputDir + "vehicle.txt");
-        for (String file : filenames) {
-            if (!file.equals("vehicle.txt")) {
-//                generateFile(n, kMap.get(file), memberPercent, alpha, beta,
-//                        inputDir + file, outputDir + file.substring(0, file.length() - 4) + ".dat");
-                generateFile(n, -1, memberPercent, alpha, beta,
-                        inputDir + file, outputDir + file.substring(0, file.length() - 4) + ".dat");
+        String optimalVehicleOn = optimalVehicle == 1 ? "_optimalVehicle" : "";
+        String outputDir = "data\\" + "pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + "\\"
+                + alpha + "_" + beta + "\\";
+        Utils.createDirectory(outputDir);
+
+        if (optimalVehicle == 0) {
+            for (String file : filenames) {
+                if (!file.equals("optimal")) {
+                    generateFile(n, -1, memberPercent, alpha, beta,
+                            inputDir + file + ".txt", outputDir + file + ".dat");
+                }
+            }
+        } else {
+            Map<String, Integer> kMap = Utils.getVehicleNumber(inputDir + "optimal.txt");
+            for (String file : filenames) {
+                if (!file.equals("optimal")) {
+                    generateFile(n, kMap.get(file), memberPercent, alpha, beta,
+                            inputDir + file + ".txt", outputDir + file + ".dat");
+                }
             }
         }
     }
 
-    public void generateFile(int n, int K, double memberPercent, int alpha, int beta,
+    public void generateFile(int n, int K, double memberPercent, double alpha, double beta,
                              String inputFileName, String outputFileName) {
         InputParam inputParam = Utils.readDataFromFile(n, K, memberPercent, inputFileName);
         inputParam.setAlpha(alpha);

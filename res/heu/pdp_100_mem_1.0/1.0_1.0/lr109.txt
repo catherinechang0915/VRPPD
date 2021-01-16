@@ -1,0 +1,1352 @@
+Vehicle 0
+0 30 22 75 83 46 44 20 97 99 73 107 
+
+Vehicle 1
+0 43 3 56 96 52 45 98 105 107 
+
+Vehicle 2
+0 31 6 32 84 59 85 5 58 107 
+
+Vehicle 3
+0 1 36 37 11 89 27 80 90 54 64 107 
+
+Vehicle 4
+0 14 15 68 67 2 55 40 93 107 
+
+Vehicle 5
+0 23 42 76 95 19 24 77 72 107 
+
+Vehicle 6
+0 21 34 12 65 74 87 38 28 81 91 107 
+
+Vehicle 7
+0 4 53 106 57 107 
+
+Vehicle 8
+0 50 49 102 103 29 82 47 100 51 104 107 
+
+Vehicle 9
+0 26 16 48 69 9 101 79 8 62 61 107 
+
+Vehicle 10
+0 7 39 17 41 60 70 18 71 94 92 107 
+
+Vehicle 12
+0 13 35 88 25 66 33 78 10 63 86 107 
+
+Vehicle used: 12
+Total Distance Traveled: 1233.5880690788952
+Total Penalty of Delay: 0.0
+Time Elasped: 4532
+Vehicle 0 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 17.804493814764857
+			Node 30
+		Load 28.0
+		Time 17.804493814764857
+		Delay 0.0
+			Membership 1
+			Time Window [17, 100]
+			Load at node 28
+			Service time at node 10
+			Location (21, 24)
+	Distance between 14.142135623730951
+			Node 22
+		Load 46.0
+		Time 45.0
+		Delay 0.0
+			Membership 1
+			Time Window [45, 102]
+			Load at node 18
+			Service time at node 10
+			Location (11, 14)
+	Distance between 5.656854249492381
+			Node 75
+		Load 28.0
+		Time 60.65685424949238
+		Delay 0.0
+			Membership 1
+			Time Window [32, 114]
+			Load at node -18
+			Service time at node 10
+			Location (15, 10)
+	Distance between 11.180339887498949
+			Node 83
+		Load 0.0
+		Time 81.83719413699133
+		Delay 0.0
+			Membership 1
+			Time Window [60, 115]
+			Load at node -28
+			Service time at node 10
+			Location (5, 5)
+	Distance between 13.038404810405298
+			Node 46
+		Load 35.0
+		Time 104.87559894739663
+		Delay 0.0
+			Membership 1
+			Time Window [74, 123]
+			Load at node 35
+			Service time at node 10
+			Location (4, 18)
+	Distance between 14.7648230602334
+			Node 44
+		Load 42.0
+		Time 129.64042200763004
+		Delay 0.0
+			Membership 1
+			Time Window [81, 130]
+			Load at node 7
+			Service time at node 10
+			Location (11, 31)
+	Distance between 14.212670403551895
+			Node 20
+		Load 50.0
+		Time 153.85309241118193
+		Delay 0.0
+			Membership 1
+			Time Window [113, 164]
+			Load at node 8
+			Service time at node 10
+			Location (20, 20)
+	Distance between 2.8284271247461903
+			Node 97
+		Load 43.0
+		Time 166.68151953592812
+		Delay 0.0
+			Membership 1
+			Time Window [123, 195]
+			Load at node -7
+			Service time at node 10
+			Location (18, 18)
+	Distance between 3.1622776601683795
+			Node 99
+		Load 8.0
+		Time 179.8437971960965
+		Delay 0.0
+			Membership 1
+			Time Window [132, 194]
+			Load at node -35
+			Service time at node 10
+			Location (15, 19)
+	Distance between 5.830951894845301
+			Node 73
+		Load 0.0
+		Time 195.6747490909418
+		Delay 0.0
+			Membership 1
+			Time Window [129, 199]
+			Load at node -8
+			Service time at node 10
+			Location (18, 24)
+	Distance between 20.248456731316587
+			Node 107
+		Load 0.0
+		Time 225.92320582225838
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 1 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 21.095023109728988
+			Node 43
+		Load 11.0
+		Time 21.095023109728988
+		Delay 0.0
+			Membership 1
+			Time Window [21, 89]
+			Load at node 11
+			Service time at node 10
+			Location (14, 37)
+	Distance between 7.0710678118654755
+			Node 3
+		Load 37.0
+		Time 38.16609092159446
+		Delay 0.0
+			Membership 1
+			Time Window [20, 93]
+			Load at node 26
+			Service time at node 10
+			Location (15, 30)
+	Distance between 6.708203932499369
+			Node 56
+		Load 11.0
+		Time 55.0
+		Delay 0.0
+			Membership 1
+			Time Window [55, 106]
+			Load at node -26
+			Service time at node 10
+			Location (12, 24)
+	Distance between 4.47213595499958
+			Node 96
+		Load 0.0
+		Time 69.47213595499957
+		Delay 0.0
+			Membership 1
+			Time Window [52, 107]
+			Load at node -11
+			Service time at node 10
+			Location (10, 20)
+	Distance between 9.055385138137417
+			Node 52
+		Load 10.0
+		Time 88.52752109313698
+		Delay 0.0
+			Membership 1
+			Time Window [32, 93]
+			Load at node 10
+			Service time at node 10
+			Location (19, 21)
+	Distance between 3.1622776601683795
+			Node 45
+		Load 51.0
+		Time 101.68979875330537
+		Delay 0.0
+			Membership 1
+			Time Window [70, 121]
+			Load at node 41
+			Service time at node 10
+			Location (16, 22)
+	Distance between 11.180339887498949
+			Node 98
+		Load 10.0
+		Time 122.87013864080431
+		Delay 0.0
+			Membership 1
+			Time Window [81, 128]
+			Load at node -41
+			Service time at node 10
+			Location (26, 27)
+	Distance between 4.47213595499958
+			Node 105
+		Load 0.0
+		Time 137.3422745958039
+		Delay 0.0
+			Membership 1
+			Time Window [131, 196]
+			Load at node -10
+			Service time at node 10
+			Location (30, 25)
+	Distance between 11.180339887498949
+			Node 107
+		Load 0.0
+		Time 158.52261448330285
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 2 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 25.495097567963924
+			Node 31
+		Load 19.0
+		Time 30.0
+		Delay 0.0
+			Membership 1
+			Time Window [30, 95]
+			Load at node 19
+			Service time at node 10
+			Location (24, 58)
+	Distance between 8.06225774829855
+			Node 6
+		Load 31.0
+		Time 48.06225774829855
+		Delay 0.0
+			Membership 1
+			Time Window [42, 101]
+			Load at node 12
+			Service time at node 10
+			Location (20, 65)
+	Distance between 13.0
+			Node 32
+		Load 40.0
+		Time 71.06225774829855
+		Delay 0.0
+			Membership 1
+			Time Window [48, 107]
+			Load at node 9
+			Service time at node 10
+			Location (15, 77)
+	Distance between 14.422205101855956
+			Node 84
+		Load 21.0
+		Time 95.4844628501545
+		Delay 0.0
+			Membership 1
+			Time Window [34, 103]
+			Load at node -19
+			Service time at node 10
+			Location (27, 69)
+	Distance between 4.47213595499958
+			Node 59
+		Load 9.0
+		Time 109.95659880515407
+		Delay 0.0
+			Membership 1
+			Time Window [73, 126]
+			Load at node -12
+			Service time at node 10
+			Location (31, 67)
+	Distance between 4.47213595499958
+			Node 85
+		Load 0.0
+		Time 124.42873476015365
+		Delay 0.0
+			Membership 1
+			Time Window [116, 175]
+			Load at node -9
+			Service time at node 10
+			Location (35, 69)
+	Distance between 10.295630140987
+			Node 5
+		Load 16.0
+		Time 144.72436490114063
+		Delay 0.0
+			Membership 1
+			Time Window [107, 150]
+			Load at node 16
+			Service time at node 0
+			Location (30, 60)
+	Distance between 0.0
+			Node 58
+		Load 0.0
+		Time 144.72436490114063
+		Delay 0.0
+			Membership 1
+			Time Window [107, 150]
+			Load at node -16
+			Service time at node 10
+			Location (30, 60)
+	Distance between 25.495097567963924
+			Node 107
+		Load 0.0
+		Time 180.21946246910454
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 3 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 18.0
+			Node 1
+		Load 7.0
+		Time 22.0
+		Delay 0.0
+			Membership 1
+			Time Window [22, 87]
+			Load at node 7
+			Service time at node 10
+			Location (35, 17)
+	Distance between 12.041594578792296
+			Node 36
+		Load 32.0
+		Time 44.0415945787923
+		Delay 0.0
+			Membership 1
+			Time Window [22, 96]
+			Load at node 25
+			Service time at node 10
+			Location (47, 16)
+	Distance between 3.1622776601683795
+			Node 37
+		Load 41.0
+		Time 57.20387223896068
+		Delay 0.0
+			Membership 1
+			Time Window [56, 109]
+			Load at node 9
+			Service time at node 10
+			Location (44, 17)
+	Distance between 3.1622776601683795
+			Node 11
+		Load 52.0
+		Time 70.36614989912906
+		Delay 0.0
+			Membership 1
+			Time Window [37, 96]
+			Load at node 11
+			Service time at node 10
+			Location (45, 20)
+	Distance between 7.0710678118654755
+			Node 89
+		Load 27.0
+		Time 87.43721771099453
+		Delay 0.0
+			Membership 1
+			Time Window [65, 114]
+			Load at node -25
+			Service time at node 10
+			Location (40, 25)
+	Distance between 6.708203932499369
+			Node 27
+		Load 41.0
+		Time 104.1454216434939
+		Delay 0.0
+			Membership 1
+			Time Window [75, 124]
+			Load at node 14
+			Service time at node 10
+			Location (37, 31)
+	Distance between 8.06225774829855
+			Node 80
+		Load 27.0
+		Time 122.20767939179245
+		Delay 0.0
+			Membership 1
+			Time Window [112, 161]
+			Load at node -14
+			Service time at node 10
+			Location (45, 30)
+	Distance between 12.041594578792296
+			Node 90
+		Load 18.0
+		Time 144.24927397058474
+		Delay 0.0
+			Membership 1
+			Time Window [118, 171]
+			Load at node -9
+			Service time at node 10
+			Location (57, 29)
+	Distance between 8.48528137423857
+			Node 54
+		Load 11.0
+		Time 162.73455534482332
+		Delay 0.0
+			Membership 1
+			Time Window [111, 170]
+			Load at node -7
+			Service time at node 10
+			Location (63, 23)
+	Distance between 3.605551275463989
+			Node 64
+		Load 0.0
+		Time 176.34010662028732
+		Delay 0.0
+			Membership 1
+			Time Window [121, 186]
+			Load at node -11
+			Service time at node 10
+			Location (65, 20)
+	Distance between 33.54101966249684
+			Node 107
+		Load 0.0
+		Time 219.88112628278415
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 4 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 6.324555320336759
+			Node 14
+		Load 16.0
+		Time 11.0
+		Delay 0.0
+			Membership 1
+			Time Window [11, 76]
+			Load at node 16
+			Service time at node 10
+			Location (41, 37)
+	Distance between 23.53720459187964
+			Node 15
+		Load 25.0
+		Time 44.53720459187964
+		Delay 0.0
+			Membership 1
+			Time Window [37, 98]
+			Load at node 9
+			Service time at node 10
+			Location (64, 42)
+	Distance between 10.44030650891055
+			Node 68
+		Load 16.0
+		Time 71.0
+		Delay 0.0
+			Membership 1
+			Time Window [71, 130]
+			Load at node -9
+			Service time at node 10
+			Location (61, 52)
+	Distance between 5.656854249492381
+			Node 67
+		Load 0.0
+		Time 86.65685424949238
+		Delay 0.0
+			Membership 1
+			Time Window [72, 121]
+			Load at node -16
+			Service time at node 10
+			Location (57, 48)
+	Distance between 3.605551275463989
+			Node 2
+		Load 13.0
+		Time 100.26240552495638
+		Delay 0.0
+			Membership 1
+			Time Window [98, 143]
+			Load at node 13
+			Service time at node 10
+			Location (55, 45)
+	Distance between 6.082762530298219
+			Node 55
+		Load 0.0
+		Time 117.0
+		Delay 0.0
+			Membership 1
+			Time Window [117, 176]
+			Load at node -13
+			Service time at node 10
+			Location (56, 39)
+	Distance between 5.0
+			Node 40
+		Load 14.0
+		Time 136.0
+		Delay 0.0
+			Membership 1
+			Time Window [136, 200]
+			Load at node 14
+			Service time at node 10
+			Location (53, 43)
+	Distance between 7.211102550927978
+			Node 93
+		Load 0.0
+		Time 153.211102550928
+		Delay 0.0
+			Membership 1
+			Time Window [102, 155]
+			Load at node -14
+			Service time at node 10
+			Location (47, 47)
+	Distance between 16.97056274847714
+			Node 107
+		Load 0.0
+		Time 180.18166529940513
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 5 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 29.154759474226502
+			Node 23
+		Load 16.0
+		Time 29.154759474226502
+		Delay 0.0
+			Membership 1
+			Time Window [29, 99]
+			Load at node 16
+			Service time at node 10
+			Location (6, 38)
+	Distance between 12.727922061357855
+			Node 42
+		Load 32.0
+		Time 51.882681535584354
+		Delay 0.0
+			Membership 1
+			Time Window [29, 90]
+			Load at node 16
+			Service time at node 10
+			Location (15, 47)
+	Distance between 13.0
+			Node 76
+		Load 16.0
+		Time 74.88268153558435
+		Delay 0.0
+			Membership 1
+			Time Window [52, 109]
+			Load at node -16
+			Service time at node 10
+			Location (15, 60)
+	Distance between 8.06225774829855
+			Node 95
+		Load 0.0
+		Time 92.9449392838829
+		Delay 0.0
+			Membership 1
+			Time Window [34, 105]
+			Load at node -16
+			Service time at node 10
+			Location (8, 56)
+	Distance between 7.211102550927978
+			Node 19
+		Load 5.0
+		Time 110.15604183481088
+		Delay 0.0
+			Membership 1
+			Time Window [41, 112]
+			Load at node 5
+			Service time at node 10
+			Location (2, 60)
+	Distance between 8.94427190999916
+			Node 24
+		Load 35.0
+		Time 129.10031374481002
+		Delay 0.0
+			Membership 1
+			Time Window [93, 132]
+			Load at node 30
+			Service time at node 0
+			Location (6, 68)
+	Distance between 0.0
+			Node 77
+		Load 5.0
+		Time 129.10031374481002
+		Delay 0.0
+			Membership 1
+			Time Window [93, 132]
+			Load at node -30
+			Service time at node 10
+			Location (6, 68)
+	Distance between 17.46424919657298
+			Node 72
+		Load 0.0
+		Time 156.564562941383
+		Delay 0.0
+			Membership 1
+			Time Window [128, 192]
+			Load at node -5
+			Service time at node 10
+			Location (13, 52)
+	Distance between 27.80287754891569
+			Node 107
+		Load 0.0
+		Time 194.3674404902987
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 6 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 33.97057550292606
+			Node 21
+		Load 31.0
+		Time 33.97057550292606
+		Delay 0.0
+			Membership 1
+			Time Window [33, 110]
+			Load at node 31
+			Service time at node 10
+			Location (60, 12)
+	Distance between 9.899494936611665
+			Node 34
+		Load 56.0
+		Time 59.0
+		Delay 0.0
+			Membership 1
+			Time Window [59, 116]
+			Load at node 25
+			Service time at node 10
+			Location (67, 5)
+	Distance between 12.0
+			Node 12
+		Load 85.0
+		Time 81.0
+		Delay 0.0
+			Membership 1
+			Time Window [43, 102]
+			Load at node 29
+			Service time at node 10
+			Location (55, 5)
+	Distance between 8.48528137423857
+			Node 65
+		Load 56.0
+		Time 99.48528137423857
+		Delay 0.0
+			Membership 1
+			Time Window [45, 102]
+			Load at node -29
+			Service time at node 10
+			Location (49, 11)
+	Distance between 4.123105625617661
+			Node 74
+		Load 25.0
+		Time 113.60838699985624
+		Delay 0.0
+			Membership 1
+			Time Window [76, 127]
+			Load at node -31
+			Service time at node 10
+			Location (45, 10)
+	Distance between 4.242640687119285
+			Node 87
+		Load 0.0
+		Time 127.85102768697553
+		Delay 0.0
+			Membership 1
+			Time Window [72, 131]
+			Load at node -25
+			Service time at node 10
+			Location (42, 7)
+	Distance between 7.211102550927978
+			Node 38
+		Load 8.0
+		Time 145.06213023790352
+		Delay 0.0
+			Membership 1
+			Time Window [123, 184]
+			Load at node 8
+			Service time at node 10
+			Location (46, 13)
+	Distance between 7.0710678118654755
+			Node 28
+		Load 14.0
+		Time 162.133198049769
+		Delay 0.0
+			Membership 1
+			Time Window [106, 163]
+			Load at node 6
+			Service time at node 0
+			Location (53, 12)
+	Distance between 0.0
+			Node 81
+		Load 8.0
+		Time 162.133198049769
+		Delay 0.0
+			Membership 1
+			Time Window [106, 163]
+			Load at node -6
+			Service time at node 10
+			Location (53, 12)
+	Distance between 8.246211251235321
+			Node 91
+		Load 0.0
+		Time 180.37940930100433
+		Delay 0.0
+			Membership 1
+			Time Window [123, 184]
+			Load at node -8
+			Service time at node 10
+			Location (55, 20)
+	Distance between 25.0
+			Node 107
+		Load 0.0
+		Time 215.37940930100433
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 7 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 11.180339887498949
+			Node 4
+		Load 3.0
+		Time 76.0
+		Delay 0.0
+			Membership 1
+			Time Window [76, 131]
+			Load at node 3
+			Service time at node 10
+			Location (25, 30)
+	Distance between 6.4031242374328485
+			Node 53
+		Load 12.0
+		Time 92.40312423743285
+		Delay 0.0
+			Membership 1
+			Time Window [60, 115]
+			Load at node 9
+			Service time at node 0
+			Location (20, 26)
+	Distance between 0.0
+			Node 106
+		Load 3.0
+		Time 92.40312423743285
+		Delay 0.0
+			Membership 1
+			Time Window [60, 115]
+			Load at node -9
+			Service time at node 10
+			Location (20, 26)
+	Distance between 2.23606797749979
+			Node 57
+		Load 0.0
+		Time 114.0
+		Delay 0.0
+			Membership 1
+			Time Window [114, 165]
+			Load at node -3
+			Service time at node 10
+			Location (22, 27)
+	Distance between 15.264337522473747
+			Node 107
+		Load 0.0
+		Time 139.26433752247374
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 8 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 14.866068747318506
+			Node 50
+		Load 20.0
+		Time 14.866068747318506
+		Delay 0.0
+			Membership 1
+			Time Window [14, 78]
+			Load at node 20
+			Service time at node 10
+			Location (25, 24)
+	Distance between 3.605551275463989
+			Node 49
+		Load 22.0
+		Time 28.471620022782496
+		Delay 0.0
+			Membership 1
+			Time Window [18, 88]
+			Load at node 2
+			Service time at node 10
+			Location (22, 22)
+	Distance between 10.198039027185569
+			Node 102
+		Load 20.0
+		Time 48.66965904996806
+		Delay 0.0
+			Membership 1
+			Time Window [25, 91]
+			Load at node -2
+			Service time at node 10
+			Location (24, 12)
+	Distance between 9.219544457292887
+			Node 103
+		Load 0.0
+		Time 67.88920350726094
+		Delay 0.0
+			Membership 1
+			Time Window [35, 96]
+			Load at node -20
+			Service time at node 10
+			Location (30, 5)
+	Distance between 7.280109889280518
+			Node 29
+		Load 7.0
+		Time 85.16931339654147
+		Delay 0.0
+			Membership 1
+			Time Window [77, 134]
+			Load at node 7
+			Service time at node 0
+			Location (32, 12)
+	Distance between 0.0
+			Node 82
+		Load 0.0
+		Time 85.16931339654147
+		Delay 0.0
+			Membership 1
+			Time Window [77, 134]
+			Load at node -7
+			Service time at node 10
+			Location (32, 12)
+	Distance between 7.211102550927978
+			Node 47
+		Load 26.0
+		Time 102.38041594746944
+		Delay 0.0
+			Membership 1
+			Time Window [79, 116]
+			Load at node 26
+			Service time at node 10
+			Location (28, 18)
+	Distance between 15.811388300841896
+			Node 100
+		Load 0.0
+		Time 128.19180424831134
+		Delay 0.0
+			Membership 1
+			Time Window [111, 162]
+			Load at node -26
+			Service time at node 10
+			Location (23, 3)
+	Distance between 18.110770276274835
+			Node 51
+		Load 12.0
+		Time 156.3025745245862
+		Delay 0.0
+			Membership 1
+			Time Window [115, 160]
+			Load at node 12
+			Service time at node 10
+			Location (25, 21)
+	Distance between 12.083045973594572
+			Node 104
+		Load 0.0
+		Time 178.38562049818077
+		Delay 0.0
+			Membership 1
+			Time Window [147, 210]
+			Load at node -12
+			Service time at node 10
+			Location (36, 26)
+	Distance between 9.055385138137417
+			Node 107
+		Load 0.0
+		Time 197.44100563631818
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 9 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 11.313708498984761
+			Node 26
+		Load 9.0
+		Time 26.0
+		Delay 0.0
+			Membership 1
+			Time Window [26, 87]
+			Load at node 9
+			Service time at node 10
+			Location (27, 43)
+	Distance between 9.848857801796104
+			Node 16
+		Load 36.0
+		Time 45.8488578017961
+		Delay 0.0
+			Membership 1
+			Time Window [24, 85]
+			Load at node 27
+			Service time at node 10
+			Location (31, 52)
+	Distance between 5.0
+			Node 48
+		Load 45.0
+		Time 60.8488578017961
+		Delay 0.0
+			Membership 1
+			Time Window [50, 107]
+			Load at node 9
+			Service time at node 10
+			Location (26, 52)
+	Distance between 6.324555320336759
+			Node 69
+		Load 18.0
+		Time 77.17341312213286
+		Delay 0.0
+			Membership 1
+			Time Window [61, 110]
+			Load at node -27
+			Service time at node 10
+			Location (20, 50)
+	Distance between 10.0
+			Node 9
+		Load 30.0
+		Time 97.17341312213286
+		Delay 0.0
+			Membership 1
+			Time Window [69, 114]
+			Load at node 12
+			Service time at node 10
+			Location (20, 40)
+	Distance between 10.44030650891055
+			Node 101
+		Load 21.0
+		Time 117.61371963104341
+		Delay 0.0
+			Membership 1
+			Time Window [75, 124]
+			Load at node -9
+			Service time at node 10
+			Location (10, 43)
+	Distance between 9.433981132056603
+			Node 79
+		Load 12.0
+		Time 137.0477007631
+		Delay 0.0
+			Membership 1
+			Time Window [92, 151]
+			Load at node -9
+			Service time at node 10
+			Location (2, 48)
+	Distance between 18.24828759089466
+			Node 8
+		Load 14.0
+		Time 165.29598835399466
+		Delay 0.0
+			Membership 1
+			Time Window [124, 189]
+			Load at node 2
+			Service time at node 10
+			Location (5, 30)
+	Distance between 12.649110640673518
+			Node 62
+		Load 2.0
+		Time 187.94509899466817
+		Delay 0.0
+			Membership 1
+			Time Window [134, 199]
+			Load at node -12
+			Service time at node 10
+			Location (17, 34)
+	Distance between 9.055385138137417
+			Node 61
+		Load 0.0
+		Time 207.00048413280558
+		Delay 0.0
+			Membership 1
+			Time Window [139, 211]
+			Load at node -2
+			Service time at node 10
+			Location (26, 35)
+	Distance between 9.0
+			Node 107
+		Load 0.0
+		Time 226.00048413280558
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 10 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 15.0
+			Node 7
+		Load 19.0
+		Time 38.0
+		Delay 0.0
+			Membership 1
+			Time Window [38, 97]
+			Load at node 19
+			Service time at node 10
+			Location (50, 35)
+	Distance between 7.0710678118654755
+			Node 39
+		Load 32.0
+		Time 55.071067811865476
+		Delay 0.0
+			Membership 1
+			Time Window [52, 103]
+			Load at node 13
+			Service time at node 10
+			Location (49, 42)
+	Distance between 10.770329614269007
+			Node 17
+		Load 43.0
+		Time 75.84139742613448
+		Delay 0.0
+			Membership 1
+			Time Window [24, 92]
+			Load at node 11
+			Service time at node 10
+			Location (53, 52)
+	Distance between 2.8284271247461903
+			Node 41
+		Load 69.0
+		Time 88.66982455088066
+		Delay 0.0
+			Membership 1
+			Time Window [78, 119]
+			Load at node 26
+			Service time at node 10
+			Location (55, 54)
+	Distance between 6.0
+			Node 60
+		Load 50.0
+		Time 104.66982455088066
+		Delay 0.0
+			Membership 1
+			Time Window [74, 129]
+			Load at node -19
+			Service time at node 10
+			Location (55, 60)
+	Distance between 9.433981132056603
+			Node 70
+		Load 39.0
+		Time 124.10380568293726
+		Delay 0.0
+			Membership 1
+			Time Window [116, 178]
+			Load at node -11
+			Service time at node 10
+			Location (63, 65)
+	Distance between 10.198039027185569
+			Node 18
+		Load 53.0
+		Time 144.30184471012282
+		Delay 0.0
+			Membership 1
+			Time Window [96, 147]
+			Load at node 14
+			Service time at node 0
+			Location (65, 55)
+	Distance between 0.0
+			Node 71
+		Load 39.0
+		Time 144.30184471012282
+		Delay 0.0
+			Membership 1
+			Time Window [96, 147]
+			Load at node -14
+			Service time at node 10
+			Location (65, 55)
+	Distance between 20.0
+			Node 94
+		Load 13.0
+		Time 174.30184471012282
+		Delay 0.0
+			Membership 1
+			Time Window [124, 190]
+			Load at node -26
+			Service time at node 10
+			Location (65, 35)
+	Distance between 9.219544457292887
+			Node 92
+		Load 0.0
+		Time 193.52138916741572
+		Delay 0.0
+			Membership 1
+			Time Window [135, 198]
+			Load at node -13
+			Service time at node 10
+			Location (56, 37)
+	Distance between 21.095023109728988
+			Node 107
+		Load 0.0
+		Time 224.61641227714472
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+
+Vehicle 12 with capacity 200
+			Node 0
+		Load 0.0
+		Time 0.0
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+	Distance between 5.0
+			Node 13
+		Load 16.0
+		Time 8.0
+		Delay 0.0
+			Membership 1
+			Time Window [8, 75]
+			Load at node 16
+			Service time at node 10
+			Location (35, 40)
+	Distance between 7.280109889280518
+			Node 35
+		Load 22.0
+		Time 25.280109889280517
+		Delay 0.0
+			Membership 1
+			Time Window [23, 86]
+			Load at node 6
+			Service time at node 10
+			Location (37, 47)
+	Distance between 13.341664064126334
+			Node 88
+		Load 16.0
+		Time 49.0
+		Delay 0.0
+			Membership 1
+			Time Window [49, 102]
+			Load at node -6
+			Service time at node 10
+			Location (40, 60)
+	Distance between 9.219544457292887
+			Node 25
+		Load 26.0
+		Time 68.21954445729288
+		Delay 0.0
+			Membership 1
+			Time Window [64, 121]
+			Load at node 10
+			Service time at node 10
+			Location (49, 58)
+	Distance between 12.806248474865697
+			Node 66
+		Load 10.0
+		Time 91.02579293215858
+		Delay 0.0
+			Membership 1
+			Time Window [54, 109]
+			Load at node -16
+			Service time at node 10
+			Location (57, 68)
+	Distance between 10.295630140987
+			Node 33
+		Load 30.0
+		Time 111.32142307314558
+		Delay 0.0
+			Membership 1
+			Time Window [49, 113]
+			Load at node 20
+			Service time at node 10
+			Location (62, 77)
+	Distance between 13.601470508735444
+			Node 78
+		Load 20.0
+		Time 134.92289358188103
+		Delay 0.0
+			Membership 1
+			Time Window [104, 159]
+			Load at node -10
+			Service time at node 10
+			Location (49, 73)
+	Distance between 8.94427190999916
+			Node 10
+		Load 29.0
+		Time 153.8671654918802
+		Delay 0.0
+			Membership 1
+			Time Window [105, 156]
+			Load at node 9
+			Service time at node 10
+			Location (45, 65)
+	Distance between 12.041594578792296
+			Node 63
+		Load 20.0
+		Time 175.90876007067249
+		Delay 0.0
+			Membership 1
+			Time Window [123, 198]
+			Load at node -9
+			Service time at node 10
+			Location (37, 56)
+	Distance between 8.06225774829855
+			Node 86
+		Load 0.0
+		Time 193.97101781897103
+		Delay 0.0
+			Membership 1
+			Time Window [133, 198]
+			Load at node -20
+			Service time at node 10
+			Location (41, 49)
+	Distance between 15.231546211727817
+			Node 107
+		Load 0.0
+		Time 219.20256403069885
+		Delay 0.0
+			Membership 1
+			Time Window [0, 230]
+			Load at node 0
+			Service time at node 0
+			Location (35, 35)
+

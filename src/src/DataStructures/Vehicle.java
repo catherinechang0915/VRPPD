@@ -1,6 +1,8 @@
 package src.DataStructures;
 
-public class Vehicle {
+import java.io.Serializable;
+
+public class Vehicle implements Serializable {
 
     private int k; // index for the vehicle
     private int capacity;

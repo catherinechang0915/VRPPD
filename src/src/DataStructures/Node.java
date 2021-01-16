@@ -1,9 +1,11 @@
 package src.DataStructures;
 
+import java.io.Serializable;
+
 /**
  * Represent one location with related information (load, time, etc.)
  */
-public class Node {
+public class Node implements Serializable {
 
     // values for the input values (related to what in .dat file)
     private int index;

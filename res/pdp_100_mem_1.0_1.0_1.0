@@ -1,0 +1,5 @@
+Test Case      Vehicle        Objective      Distance       Penalty        Time           Fail Num       
+lc101          0.000000       0.000000       0.000000       NaN            -0.001000      0              
+Summary        0.000000       0.000000       0.000000       NaN            -0.001000      0              
+OPL Average Time 19.229
+Heuristic Average Time 4.11

@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class Utils {
 
     /**
-     * Read from .dat file
+     * Read from .dat file, for solver use
      * @param filePath filepath for .dat file
      * @return InputParam object
      */
@@ -152,6 +152,12 @@ public class Utils {
         return null;
     }
 
+    /**
+     * For debug use, the correspondence between test instances and optimal number of vehicles used are stored
+     * in filePath, read and return the correspondence
+     * @param filePath complete filepath for correspondence
+     * @return a map stores the correspondence
+     */
     public static Map<String, Integer> getVehicleNumber(String filePath) {
         Map<String, Integer> kMap = new HashMap<>();
         try {
@@ -163,7 +169,7 @@ public class Utils {
             String[] text = null;
             while ((line = bufferedReader.readLine()) != null) {
                 text = line.split("\\s+");
-                kMap.put(text[0] + ".txt", Integer.parseInt(text[1]));
+                kMap.put(text[0], Integer.parseInt(text[1]));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -172,8 +178,16 @@ public class Utils {
         return kMap;
     }
 
-
-
+    /**
+     * Read for raw test instances, used for data generator,
+     * and save result as input parameters in our problem setting
+     * @param n total number of nodes except depots (= 2 * number of requests)
+     * @param K number of vehicles, -1 means sufficient large (original number in the text file),
+     *          otherwise set to be value of input argument
+     * @param memberPercent the percent of nodes to have hard time windows
+     * @param filePath complete filepath for raw data
+     * @return InputParam object modified from raw data
+     */
     public static InputParam readDataFromFile(int n, int K, double memberPercent, String filePath) {
 
         List<Node> unsortedNodes = new LinkedList<>();
@@ -259,9 +273,9 @@ public class Utils {
     }
 
     /**
-     *
+     * Write input parameters to .dat file, used for data generator
      * @param inputParam generated input data
-     * @param filePath
+     * @param filePath complete filepath
      */
     public static void writeDataToFile(InputParam inputParam, String filePath) {
         File fileData = new File(filePath);
@@ -342,7 +356,7 @@ public class Utils {
 
     /**
      * Return a list of string names in the directory, return null if dir not exist
-     * @param dirPath
+     * @param dirPath path for directory
      * @return filenames in dirPath
      */
     public static List<String> fileList(String dirPath) {
@@ -362,6 +376,11 @@ public class Utils {
         return files;
     }
 
+    /**
+     * Read filenames in directory, system exit if no such directory
+     * @param dirPath path for directory
+     * @return filename without extension in a directory
+     */
     public static List<String> fileListNoExtension(String dirPath) {
         File folder = new File(dirPath);
         List<String> files = new LinkedList<>();
@@ -379,11 +398,9 @@ public class Utils {
         return files;
     }
 
-
-
     /**
      * create a directory if not exists
-     * @param dirPath
+     * @param dirPath path for directory
      */
     public static void createDirectory(String dirPath) {
         File directory = new File(dirPath);
@@ -394,8 +411,8 @@ public class Utils {
 
     /**
      * create file and recursively create parent directories if not exist
-     * @param filePath
-     * @return file
+     * @param filePath complete path for file
+     * @return newly created file
      */
     public static File createFile(String filePath) {
         File file = new File(filePath);
@@ -415,16 +432,17 @@ public class Utils {
     }
 
     /**
-     *
+     * Save String to file
      * @param content String content to be saved
      * @param filename filepath
      */
-    public static void writeToFile(String content, String filename) {
+    public static void writeToFile(String content, String filename, boolean isAppend) {
         File file = new File(filename);
-        if (file.exists()) file.delete();
+        if (!file.exists()) createFile(filename);
+//        if (file.exists()) file.delete();
         BufferedWriter bufferedWriter = null;
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            FileOutputStream fileOutputStream = new FileOutputStream(file, isAppend);
             OutputStreamWriter outputStreamReader = new OutputStreamWriter(fileOutputStream);
             bufferedWriter = new BufferedWriter(outputStreamReader);
 
@@ -435,11 +453,84 @@ public class Utils {
         }
     }
 
+    /**
+     * Read lines in specified file
+     * @param file file to be read
+     * @param skipLine specify head lines length to be skipped
+     * @return array of string, each representing a line
+     */
+    public static List<String> readLines(File file, int skipLine) {
+        List<String> lines = new LinkedList<>();
+        String line = null;
+        try {
+            FileInputStream fileInputStream = new FileInputStream(file);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            for (int i = 0; i < skipLine; i++) bufferedReader.readLine();
+            while ((line = bufferedReader.readLine()) != null) lines.add(line);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return lines;
+    }
+
+    /**
+     * For deep copy, serialize the object as byte array
+     * @param object object to be serialized
+     * @return byte array
+     */
+    public static byte[] serialize(Solution object) {
+        byte[] byteData = null;
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(object);
+            oos.flush();
+            oos.close();
+            bos.close();
+            byteData = bos.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return byteData;
+    }
+
+    /**
+     * For deep copy, deserialize the object
+     * @param byteData serialized object
+     * @return deserialized object
+     */
+    public static Solution deserialize(byte[] byteData) {
+        Solution object = null;
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(byteData);
+            object = (Solution) new ObjectInputStream(bais).readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return object;
+    }
+
+    /**
+     * Calculate the euclidean distance between two nodes using their (x, y) coordinates
+     * @param n1 node1
+     * @param n2 node2
+     * @return distance
+     */
     public static double calculateDistance(Node n1, Node n2) {
         return Math.sqrt((n1.getX() - n2.getX()) * (n1.getX() - n2.getX())
                 + (n1.getY() - n2.getY()) * (n1.getY() - n2.getY()));
     }
 
+    /**
+     * Check if two double are equal within tolerance
+     * @param n1 node1
+     * @param n2 node2
+     * @return boolean isEqual
+     */
     public static boolean doubleEqual(double n1, double n2) {
         return Math.abs(n1 - n2) < Math.pow(10, -5);
     }
