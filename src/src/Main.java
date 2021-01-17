@@ -8,22 +8,33 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        String instruction = "args: [mode] [n] [memberPercent] [alpha] [beta] [using optimal number of vehicles]\n"
-                + "mode: 0 Data Generator\n\t: 1 OPL Solver\n\t: 2 Heuristic\n\t:3 Validation\n\t: 4 Debug\n"
-                + "K: 0 using vehicle number in raw data text file\n : 1 using vehicle number in optimal solution";
+        String instruction = "mode: 0 Data Generator\n\t: 1 OPL Solver\n\t: 2 Heuristic\n\t: 3 Validation\n\t: 4 Debug\n\n"
+                + "For mode 0\n"
+                + "args: [mode] [n] [memberPercent] [alpha] [beta] [K]\n"
+                + "\tK: 0 using vehicle number in raw data text file\n\t : 1 using vehicle number in optimal solution\n\n"
+                + "For mode 1, 2, 3\n"
+                + "args: [mode] [n] [memberPercent] [alpha] [beta]\n\n"
+                + "For mode 4\n"
+                + "args: [mode] [.dat file path]";
 
-        if (args.length > 0 && Integer.parseInt(args[0]) != 4 && args.length != 6) {
-            System.out.println("Incorrect number of arguments. Please format as following instruction.");
+        if (args.length == 0) {
+            System.out.println("No argument input. Please follow the instruction below.\n");
             System.out.println(instruction);
             System.exit(1);
         }
 
         int mode = Integer.parseInt(args[0]);
 
-        // Debug with toy example
+        if (mode == 0 && args.length != 6 || mode == 4 && args.length != 2 || mode != 0 && mode != 4 && args.length != 5) {
+            System.out.println("Incorrect number of arguments. Please format as following instruction.\n");
+            System.out.println(instruction);
+            System.exit(1);
+        }
+
+        // Debug with input data file
         if (mode == 4) {
-            Solver debugSolver = new MySolver("src\\", "toy.dat");
-            debugSolver.solve("src\\", "toy.txt");
+            Solver debugSolver = new MySolver(args[1]);
+            debugSolver.solve("src\\debug.txt");
             return;
         }
 
@@ -31,10 +42,10 @@ public class Main {
         double memberPercent = Double.parseDouble(args[2]);
         double alpha = Double.parseDouble(args[3]);
         double beta = Double.parseDouble(args[4]);
-        int optimalVehicle = Integer.parseInt(args[5]);
 
         // Data Generator
         if (mode == 0) {
+            int optimalVehicle = Integer.parseInt(args[5]);
             DataGenerator gen = new DataGenerator(n, memberPercent, alpha, beta, optimalVehicle);
             System.out.println("Data generation finished.");
             return;
@@ -59,8 +70,8 @@ public class Main {
         if (mode == 1) {
             generateAggregationFileHeader(resDirOPL + "aggregation.txt");
             for (String filename : files) {
-                solver = new OPLSolver(dataDir, filename + ".dat");
-                solver.solve(resDirOPL, filename + ".txt");
+                solver = new OPLSolver(dataDir + filename + ".dat");
+                solver.solve(resDirOPL + filename + ".txt");
                 solution = solver.getSolverSolution();
                 int fail = solution == null ? 1 : 0;
                 generateAggregationFile(resDirOPL + "aggregation.txt", filename, solution.getVehicleNumber(),
@@ -82,9 +93,9 @@ public class Main {
                 double avgPenalty = 0;
                 long avgTime = 0;
                 for (int i = 0; i < iter; i++) {
-                    solver = new MySolver(dataDir, filename + ".dat");
+                    solver = new MySolver(dataDir + filename + ".dat");
                     try {
-                        solver.solve(resDirHEU, filename + ".txt");
+                        solver.solve(resDirHEU + filename + ".txt");
                         solution = solver.getSolverSolution();
                         avgVehicle += solution.getVehicleNumber();
                         avgObj += solver.getSolverObjective();

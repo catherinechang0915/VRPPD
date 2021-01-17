@@ -4,7 +4,7 @@ import src.DataStructures.Solution;
 
 public interface Solver {
 
-    public void solve(String resDir, String resFilename);
+    public void solve(String resFilePath);
 
     public Solution getSolverSolution();
 

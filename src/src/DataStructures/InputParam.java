@@ -14,7 +14,6 @@ public class InputParam {
     private Node[] nodes;
     // distance
     private double[][] distanceMatrix;
-    private double[][] realDistanceMatrix;
     // Objective Function Weights
     private double alpha;
     private double beta;

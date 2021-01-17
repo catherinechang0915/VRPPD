@@ -10,15 +10,18 @@ public class MySolver implements Solver{
     private InputParam inputParam;
     private Solution solution;
 
-    public MySolver(String dataDir, String dataFilename) {
-        this.inputParam = Utils.readParam(dataDir + dataFilename);
+    public MySolver(String dataFilePath) {
+        this.inputParam = Utils.readParam(dataFilePath);
     }
 
     @Override
-    public void solve(String resDir, String resFilename) {
+    public void solve(String resFilePath) {
+        String destroyOperator = "shaw";
+        String constructOperator = "regret4";
+
         double alpha = inputParam.getAlpha(), beta = inputParam.getBeta();
         int MAX_ITER = 10000;
-        int q = (int) (0.1 * inputParam.getN());
+        int q = Math.max(1, (int) (0.1 * inputParam.getN()));
 
         long startTime = System.currentTimeMillis();
         Solution sol = initialSolutionConstruction();
@@ -36,7 +39,6 @@ public class MySolver implements Solver{
             prevSol = Utils.serialize(sol);
 
             // Destroy
-            String destroyOperator = "shaw";
             switch (destroyOperator) {
                 case "random":
                     nodePair = generateNodePairRandom(q);
@@ -44,17 +46,16 @@ public class MySolver implements Solver{
                     break;
                 case "worst":
                     // For this operator, request is removed one by one
-                    worstDestroy(q, sol);
+                    nodePair = worstDestroy(q, sol);
                     break;
                 case "shaw":
                     nodePair = generateNodePairShaw(q);
                     destroy(sol, nodePair);
                     break;
             }
-//            validation(sol);
+            validation(sol);
 
             // Construct
-            String constructOperator = "regret4";
             switch (constructOperator) {
                 case "best":
                     regretConstruct(sol, nodePair, 1);
@@ -71,7 +72,7 @@ public class MySolver implements Solver{
                 case "regretM":
                     regretConstruct(sol, nodePair, -1);
             }
-//            validation(sol);
+            validation(sol);
 
             if (sol.getObjective(alpha, beta) < bestObj) {
                 bestObj = sol.getObjective(alpha, beta);
@@ -88,7 +89,7 @@ public class MySolver implements Solver{
         Solution bestToReturn = Utils.deserialize(bestSol);
         bestToReturn.setTimeElapsed(System.currentTimeMillis() - startTime);
         solution = bestToReturn;
-        writeToFile(resDir + resFilename);
+        writeToFile(resFilePath);
     }
 
     @Override
@@ -127,17 +128,13 @@ public class MySolver implements Solver{
      */
     private List<Integer> worstDestroy(int q, Solution solution) {
         List<Integer> nodePair = new LinkedList<>();
-        List<InsertPosition> positions = new LinkedList<>();
         while (nodePair.size() < q) {
             InsertPosition pos = findDestroyPosition(solution, 5);
             if (pos == null) {
                 throw new NullPointerException("Wrong code. Should always have feasible "
                         + "removal position in worst destroy operator");
             }
-            positions.add(0, pos);
             nodeRemove(pos);
-            pos.route.setDist(pos.route.getDist() + pos.distIncrease);
-            pos.route.setPenalty(pos.route.getPenalty() + pos.penaltyIncrease);
             solution.setTotalDist(solution.getTotalDist() + pos.distIncrease);
             solution.setTotalPenalty(solution.getTotalPenalty() + pos.penaltyIncrease);
 
@@ -473,16 +470,8 @@ public class MySolver implements Solver{
         double originalPenalty = 0;
         double currPenalty = 0;
 
-        // check the current removed pickup node
-        load += pNode.getq();
-        if (load < 0 || load > route.getVehicle().getCapacity()) return null;
-        time = Math.max(pNode.getTw1(), prevPNode.gets() + time
-                + distanceMatrix[prevPNode.getIndex()][pNode.getIndex()]);
-        if (time > pNode.getTw2() && pNode.getMembership() == 1) return null;
-        currPenalty += Math.max(time - pNode.getTw2(), 0);
-
         // check the following nodes
-        prevNode = pNode;
+        prevNode = prevPNode;
         for (int currIndex = pIndex; currIndex < routeNodes.size(); currIndex++) {
 
             currNode = routeNodes.get(currIndex);
@@ -572,6 +561,8 @@ public class MySolver implements Solver{
             currNode.setT(time);
             prevNode = currNode;
         }
+        route.setDist(route.getDist() + pos.distIncrease);
+        route.setPenalty(route.getPenalty() + pos.penaltyIncrease);
     }
 
     /**
@@ -801,11 +792,16 @@ public class MySolver implements Solver{
             double dist = 0;
             double penalty = 0;
             double time = 0;
+            double load = 0;
             List<Node> routeNodes = route.getNodes();
             for (int i = 1; i < routeNodes.size(); i++) {
                 Node prevNode = routeNodes.get(i - 1);
                 Node node = routeNodes.get(i);
+                load += node.getq();
+                if (!Utils.doubleEqual(node.getQ(), load)) throw new IllegalArgumentException("Wrong with load.");
+                if (load < 0 || load > route.getVehicle().getCapacity()) throw new IllegalArgumentException("Load Violation.");
                 time = Math.max(node.getTw1(), prevNode.gets() + time + Utils.calculateDistance(prevNode, node));
+                if (node.getMembership() == 1 && time > node.getTw2()) throw new IllegalArgumentException("Time window violation.");
                 if (!Utils.doubleEqual(time, node.getT())) throw new IllegalArgumentException("Wrong with time.");
                 double tempPenalty = Math.max(0, time - node.getTw2());
                 if (!Utils.doubleEqual(tempPenalty, node.getDL())) throw new IllegalArgumentException("Wrong penalty");

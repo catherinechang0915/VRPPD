@@ -10,7 +10,6 @@ import java.util.*;
 
 public class OPLSolver implements Solver{
 
-    private static final String WORKDIR = "src\\";
     private IloOplFactory oplF;
     private IloOplModel opl;
     private IloCplex cplex;
@@ -19,31 +18,28 @@ public class OPLSolver implements Solver{
     private OutputParam outputParam;
     private Solution solution;
 
-    public OPLSolver (String dataDir, String dataFilename) {
-        this(WORKDIR, "VRP.mod", dataDir, dataFilename);
+    public OPLSolver (String dataFilePath) {
+        this("src\\VRP.mod", dataFilePath);
     }
 
     /**
      * Set OPL solver with proper .mod and .dat file
-     * @param modelDir .mod directory path
-     * @param modelFilename .mod filename
-     * @param dataDir .dat directory path
-     * @param dataFilename .dat filename
+     * @param modelFilePath .mod file path
+     * @param dataFilePath .dat file path
      */
-    public OPLSolver (String modelDir, String modelFilename,
-                   String dataDir, String dataFilename) {
-        this.inputParam = Utils.readParam(dataDir + dataFilename);;
+    public OPLSolver (String modelFilePath, String dataFilePath) {
+        this.inputParam = Utils.readParam(dataFilePath);;
         try {
             IloOplFactory.setDebugMode(true);
             oplF = new IloOplFactory();
             IloOplErrorHandler errHandler = oplF.createOplErrorHandler();
-            IloOplModelSource modelSource = oplF.createOplModelSource(modelDir + modelFilename);
+            IloOplModelSource modelSource = oplF.createOplModelSource(modelFilePath);
             IloOplSettings settings = oplF.createOplSettings(errHandler);
             IloOplModelDefinition def = oplF.createOplModelDefinition(modelSource, settings);
             cplex = oplF.createCplex();
             cplex.setOut(null);
             opl = oplF.createOplModel(def, cplex);
-            IloOplDataSource dataSource = oplF.createOplDataSource(dataDir + dataFilename);
+            IloOplDataSource dataSource = oplF.createOplDataSource(dataFilePath);
             opl.addDataSource(dataSource);
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,11 +49,10 @@ public class OPLSolver implements Solver{
 
     /**
      * Use OPL interface to solve the model
-     * @param resDir output dir
-     * @param resFilename output filename
+     * @param resFilePath output file path
      */
     @Override
-    public void solve(String resDir, String resFilename) {
+    public void solve(String resFilePath) {
         int status = -1;
         try {
             long startTime = System.currentTimeMillis();
@@ -68,7 +63,7 @@ public class OPLSolver implements Solver{
                 opl.postProcess();
                 // calculate detailed routes solution
                 solution = constructSolution(elasped);
-                writeToFile(resDir + resFilename);
+                writeToFile(resFilePath);
                 oplF.end();
             } else {
                 System.out.println("No solution!");
