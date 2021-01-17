@@ -11817,7 +11817,7 @@ Vehicle 9
 Vehicle used: 10
 Total Distance Traveled: 828.9368669428338
 Total Penalty of Delay: 0.0
-Time Elasped: 18616
+Time Elasped: 20289
 Vehicle 0 with capacity 200
 			Node 0
 		Load 0.0

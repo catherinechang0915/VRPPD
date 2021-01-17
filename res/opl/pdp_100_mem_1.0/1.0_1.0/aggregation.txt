@@ -1,2 +1,1 @@
 Test Case      Vehicle        Objective      Distance       Penalty        Time           Fail Num       
-lc101          10.000000      828.936867     828.936867     0.000000       18.616000      0              
