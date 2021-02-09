@@ -1,40 +1,55 @@
 package src;
 
 import src.DataStructures.*;
-
-import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
 
     public static void main(String[] args) {
-        String instruction = "mode: 0 Data Generator\n\t: 1 OPL Solver\n\t: 2 Heuristic\n\t: 3 Validation\n\t: 4 Debug\n\n"
-                + "For mode 0\n"
-                + "args: [mode] [n] [memberPercent] [alpha] [beta] [K]\n"
-                + "\tK: 0 using vehicle number in raw data text file\n\t : 1 using vehicle number in optimal solution\n\n"
-                + "For mode 1, 2, 3\n"
-                + "args: [mode] [n] [memberPercent] [alpha] [beta]\n\n"
-                + "For mode 4\n"
-                + "args: [mode] [.dat file path]";
 
         if (args.length == 0) {
-            System.out.println("No argument input. Please follow the instruction below.\n");
-            System.out.println(instruction);
-            System.exit(1);
+            exit("No argument input.");
         }
 
-        int mode = Integer.parseInt(args[0]);
-
-        if (mode == 0 && args.length != 6 || mode == 4 && args.length != 2 || mode != 0 && mode != 4 && args.length != 5) {
-            System.out.println("Incorrect number of arguments. Please format as following instruction.\n");
-            System.out.println(instruction);
-            System.exit(1);
+        int mode = -1;
+        try {
+            mode = Integer.parseInt(args[0]);
+            if (mode < 0 || mode > 4) throw new IllegalArgumentException("Mode arg our of range");
+        } catch (Exception e) {
+            exit("Wrong format of mode.");
         }
+
+
+        if (mode == 0 && args.length != 6
+                || (mode == 1 || mode == 2) && args.length != 5
+                || mode == 3 && args.length != 7) {
+            exit("Incorrect number of arguments.");
+        }
+
 
         // Debug with input data file
         if (mode == 4) {
-            Solver debugSolver = new MySolver(args[1]);
-            debugSolver.solve("src\\debug.txt");
+            int type = -1;
+            try {
+                type = Integer.parseInt(args[1]);
+            } catch (Exception e) {
+                exit("Wrong format of debug solver type.");
+            }
+
+            Solver debugSolver;
+            if (type == 1) {
+                int destructorType = -1, constructorType = -1;
+                try {
+                    destructorType = Integer.parseInt(args[3]);
+                    constructorType = Integer.parseInt(args[4]);
+                } catch (Exception e) {
+                    exit("Wrong format of operator type.");
+                }
+                debugSolver = new MySolver(args[2], destructorType, constructorType);
+            }
+            else debugSolver = new OPLSolver(args[2]);
+            debugSolver.solve("src\\debug.txt::x");
             return;
         }
 
@@ -59,9 +74,7 @@ public class Main {
 
         List<String> files = Utils.fileListNoExtension(dataDir);
         if (files.size() == 0) {
-            System.out.println("No data in data directory. Please use mode 0 to generate suitable data first.");
-            System.out.println(instruction);
-            System.exit(1);
+            exit("No data in data directory.");
         }
 
         Solver solver = null;
@@ -81,10 +94,41 @@ public class Main {
             return;
         }
 
-        int iter = 3;
-
         if (mode == 2) {
-            generateAggregationFileHeader(resDirHEU + "aggregation.txt");
+
+        }
+
+        // TODO: how many times to repeat for the same test cases, may change to arg
+        int iter = 3;
+        if (mode == 3) {
+
+            double totalAvgVehicleGap = 0;
+            double totalAvgObjGap = 0;
+            Map<String, Integer> kMap = null;
+            Map<String, Double> objMap = null;
+
+            int destructorType = -1, constructorType = -1;
+            try {
+                destructorType = Integer.parseInt(args[5]);
+                constructorType = Integer.parseInt(args[6]);
+            } catch (Exception e) {
+                exit("Wrong format of operator type.");
+            }
+
+            String resAggregationFilename = resDirHEU + "aggregation_" + destructorType + "_"
+                    + constructorType + ".txt";
+            String resGapFilename = resDirHEU + "gap_" + destructorType + "_"
+                    + constructorType + ".txt";
+
+            int totalFail = 0;
+            long totalAvgTime = 0;
+            generateAggregationFileHeader(resAggregationFilename);
+            if (memberPercent == 1.0) {
+                kMap = Utils.getVehicleNumber("raw_data\\pdp_" + n + "\\optimal.txt");
+                objMap = Utils.getOptimalObj("raw_data\\pdp_" + n + "\\optimal.txt");
+                generateGapFileHeader(resGapFilename);
+            }
+
             for (String filename : files) {
                 int fail = 0;
                 double avgVehicle = 0;
@@ -93,7 +137,7 @@ public class Main {
                 double avgPenalty = 0;
                 long avgTime = 0;
                 for (int i = 0; i < iter; i++) {
-                    solver = new MySolver(dataDir + filename + ".dat");
+                    solver = new MySolver(dataDir + filename + ".dat", destructorType, constructorType);
                     try {
                         solver.solve(resDirHEU + filename + ".txt");
                         solution = solver.getSolverSolution();
@@ -113,16 +157,53 @@ public class Main {
                 avgPenalty = avgPenalty / iter;
                 avgTime = avgTime / iter;
 
-                generateAggregationFile(resDirHEU + "aggregation.txt", filename, avgVehicle, avgObj,
+                totalAvgTime += avgTime;
+                totalFail += fail;
+
+                if (memberPercent == 1.0) {
+                    double vehicleNum = kMap.get(filename);
+                    double obj = objMap.get(filename);
+                    double vehicleGap = Math.abs(avgVehicle - vehicleNum) / vehicleNum;
+                    double objGap = Math.abs(avgObj - obj) / obj;
+                    totalAvgObjGap += vehicleGap;
+                    totalAvgObjGap += objGap;
+                    generateGapFile(resGapFilename, filename, vehicleGap, objGap);
+                }
+
+                generateAggregationFile(resAggregationFilename, filename, avgVehicle, avgObj,
                         avgDistance, avgPenalty, avgTime, fail);
             }
-            return;
+            Utils.writeToFile("Average Time: " + (totalAvgTime / files.size()),
+                    resAggregationFilename, true);
+            Utils.writeToFile("Fail percentage: " + (totalFail / (3 * files.size())),
+                    resAggregationFilename, true);
+            if (memberPercent == 1.0) {
+                Utils.writeToFile("Average Vehicle Gap: " + (totalAvgVehicleGap / files.size()),
+                        resGapFilename, true);
+                Utils.writeToFile("Average Objective Gap: " + (totalAvgObjGap / files.size()),
+                        resGapFilename, true);
+            }
         }
+    }
 
-        if (mode == 3) {
-            generateAggregationDiffFile(resDirOPL + "aggregation.txt",
-                    resDirHEU + "aggregation.txt", resFile);
-        }
+    private static void exit(String msg) {
+        String instruction = "mode: 0 Data Generator\n\t: 1 OPL Solver\n\t: 2 ALNS Solver\n\t: 3 Heuristic\n\t: 4 Debug\n\n"
+                + "For mode 0\n"
+                + "args: [mode] [n] [memberPercent] [alpha] [beta] [K]\n"
+                + "\tK: 0 using vehicle number in raw data text file\n\t : 1 using vehicle number in optimal solution\n\n"
+                + "For mode 1, 2\n"
+                + "args: [mode] [n] [memberPercent] [alpha] [beta]\n\n"
+                + "For mode 3\n"
+                + "args: [mode] [n] [memberPercent] [alpha] [beta] [destructor type] [constructor type]\n\n"
+                + "For mode 4\n"
+                + "args: [mode] [solver type] [.dat file path] ([destructor type] [constructor type])\n\n"
+                + "Destructor Type: \n\t0: Random\n\t1: Worst\n\t2: Shaw\n"
+                + "Construcor Type: \n\t0: Regret-M\n\t1: Regret-1\n\t2: Regret-2\n\t3: Regret-3\n\t4: Regret-4";
+
+        System.out.println(msg);
+        System.out.println("Please follow the instruction below.\n");
+        System.out.println(instruction);
+        System.exit(1);
     }
 
     private static void generateAggregationFileHeader(String filePath) {
@@ -139,66 +220,17 @@ public class Main {
         Utils.writeToFile(sb.toString(), filepath, true);
     }
 
-    private static void generateAggregationDiffFile(String filepathOPL, String filepathHEU, String filePath) {
-        File fileOPL = new File(filepathOPL);
-        if (!fileOPL.exists()) {
-            System.out.println("No aggregation file for OPL solver. Please use mode 1 to generate it first.");
-            System.exit(1);
-        }
-        File fileHEU = new File(filepathHEU);
-        if (!fileHEU.exists()) {
-            System.out.println("No aggregation file for heuristic solver. Please use mode 2 to generate it first.");
-            System.exit(1);
-        }
-
-        List<String> linesOPL = Utils.readLines(fileOPL, 1);
-        List<String> linesHEU = Utils.readLines(fileHEU, 1);
-
-        generateAggregationFileHeader(filePath);
-
-        int numberOfInstances = Math.min(linesOPL.size(), linesHEU.size());
-
-        double totalVehicleGap = 0;
-        double totalObjectiveGap = 0;
-        double totalDistanceGap = 0;
-        double totalPenaltyGap = 0;
-        double totalTimeOPL = 0;
-        double totalTimeHEU = 0;
-        int totalFail = 0;
-
-        for (int i = 0; i < numberOfInstances; i++) {
-            String[] lineOPL = linesOPL.get(i).split("\\s+");
-            String[] lineHEU = linesHEU.get(i).split("\\s+");
-            if (!lineOPL[0].equals(lineHEU[0])) {
-                System.out.println("Wrong order in aggregation file. Please check or regenerate.");
-                System.exit(1);
-            }
-            double vehicleDiff = (Double.parseDouble(lineHEU[1]) - Double.parseDouble(lineOPL[1])) / Double.parseDouble(lineOPL[1]);
-            totalVehicleGap += vehicleDiff;
-
-            double objectiveDiff = Double.parseDouble(lineHEU[2]) - Double.parseDouble(lineOPL[2]);
-            totalObjectiveGap += objectiveDiff / Double.parseDouble(lineOPL[2]);
-
-            double distanceDiff = (Double.parseDouble(lineHEU[3]) - Double.parseDouble(lineOPL[3]))  / Double.parseDouble(lineOPL[3]);
-            totalDistanceGap += distanceDiff;
-
-            double penaltyDiff = (Double.parseDouble(lineHEU[4]) - Double.parseDouble(lineOPL[4])) / Double.parseDouble(lineOPL[4]);
-            totalPenaltyGap += penaltyDiff;
-
-            totalTimeOPL += Double.parseDouble(lineOPL[5]);
-            totalTimeHEU += Double.parseDouble(lineHEU[5]);
-            totalFail += Integer.parseInt(lineHEU[6]);
-
-            generateAggregationFile(filePath, lineOPL[0], vehicleDiff, objectiveDiff, distanceDiff, penaltyDiff,
-                    -1L, Integer.parseInt(lineHEU[6]));
-        }
-
-        generateAggregationFile(filePath, "Summary", totalVehicleGap / numberOfInstances,
-                totalObjectiveGap / numberOfInstances, totalDistanceGap / numberOfInstances,
-                totalPenaltyGap / numberOfInstances, -1L, totalFail);
-
-        String avgTime = "OPL Average Time " + totalTimeOPL / numberOfInstances
-                + "\n Heuristic Average Time " + totalTimeHEU / numberOfInstances;
-        Utils.writeToFile(avgTime, filePath, true);
+    private static void generateGapFileHeader(String filePath) {
+        String header = String.format("%-15s%-15s%-15s\n", "Test Case", "Vehicle", "Objective");
+        Utils.writeToFile(header, filePath, false);
     }
+
+    private static void generateGapFile(String filepath, String filename, double vehicle, double objective) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%-15s",filename)).append(String.format("%-15f", vehicle))
+                .append(String.format("%-15f", objective)).append("\n");
+        Utils.writeToFile(sb.toString(), filepath, true);
+    }
+
+
 }

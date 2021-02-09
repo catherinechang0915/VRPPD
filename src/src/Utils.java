@@ -179,15 +179,41 @@ public class Utils {
     }
 
     /**
-     * Read for raw test instances, used for data generator,
-     * and save result as input parameters in our problem setting
-     * @param n total number of nodes except depots (= 2 * number of requests)
-     * @param K number of vehicles, -1 means sufficient large (original number in the text file),
-     *          otherwise set to be value of input argument
-     * @param memberPercent the percent of nodes to have hard time windows
-     * @param filePath complete filepath for raw data
-     * @return InputParam object modified from raw data
+     * For debug use, the correspondence between test instances and optimal objective are stored
+     * in filePath, read and return the correspondence
+     * @param filePath complete filepath for correspondence
+     * @return a map stores the correspondence
      */
+    public static Map<String, Double> getOptimalObj(String filePath) {
+        Map<String, Double> objMap = new HashMap<>();
+        try {
+            FileInputStream fileInputStream = new FileInputStream(new File(filePath));
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            String line = null;
+            String[] text = null;
+            while ((line = bufferedReader.readLine()) != null) {
+                text = line.split("\\s+");
+                objMap.put(text[0], Double.parseDouble(text[2]));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return objMap;
+    }
+
+    /**
+         * Read for raw test instances, used for data generator,
+         * and save result as input parameters in our problem setting
+         * @param n total number of nodes except depots (= 2 * number of requests)
+         * @param K number of vehicles, -1 means sufficient large (original number in the text file),
+         *          otherwise set to be value of input argument
+         * @param memberPercent the percent of nodes to have hard time windows
+         * @param filePath complete filepath for raw data
+         * @return InputParam object modified from raw data
+         */
     public static InputParam readDataFromFile(int n, int K, double memberPercent, String filePath) {
 
         List<Node> unsortedNodes = new LinkedList<>();

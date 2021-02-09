@@ -105,7 +105,7 @@ public class OPLSolver implements Solver{
         try {
             // Write opl solution
             File file = Utils.createFile(filePath);
-            opl.printSolution(new FileOutputStream(file));
+//            opl.printSolution(new FileOutputStream(file));
 
             double calcObjective = solution.getObjective(inputParam.getAlpha(), inputParam.getBeta());
             // Model validation, output related info to file (debug usage only)
@@ -114,8 +114,10 @@ public class OPLSolver implements Solver{
                         + "SOL OBJECTIVE: " + calcObjective + "\n"
                         + solution.trace();
                 Utils.writeToFile(content, filePath, false);
+                solution.writeToFile(filePath, true);
+            } else {
+                solution.writeToFile(filePath, false);
             }
-            solution.writeToFile(filePath, true);
 
         } catch (Exception e) {
             e.printStackTrace();
