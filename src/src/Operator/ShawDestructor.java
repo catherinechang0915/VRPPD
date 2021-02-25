@@ -12,15 +12,14 @@ import java.util.PriorityQueue;
 
 public class ShawDestructor extends Destructor{
 
-    // TODO: may modify later
-    private final int randomRange = 3;
+    private final int p = 6;
 
-    public ShawDestructor(InputParam inputParam, double percent) {
-        super(inputParam, percent);
+    public ShawDestructor(InputParam inputParam, double percentLo, double percentHi) {
+        super(inputParam, percentLo, percentHi);
     }
 
     @Override
-    public void destroy(Solution solution) {
+    public void destroyNodePair(Solution solution) {
         nodePair = generateNodePairShaw();
         destroy(solution, nodePair);
     }
@@ -44,12 +43,12 @@ public class ShawDestructor extends Destructor{
                             + 3 * (Math.abs(nodes[o].getT() - nodes[nodeNum].getT())
                             + Math.abs(nodes[o + N].getT() - nodes[nodeNum + N].getT()))
                             + 2 * Math.abs(nodes[o].getq() - nodes[nodeNum].getq())
-            ));
+            )); // smaller is similiar -> top ele better
             for (int i = 1; i <= N; i++) {
                 if (!nodePair.contains(i)) pq.add(i);
             }
-            double temp = (int)(Math.random() * randomRange);
-            for (int i = 0; i < temp; i++) {
+
+            for (int i = 0; i < getRandomPos(p, pq.size()); i++) {
                 pq.poll();
             }
             nodePair.add(pq.poll());

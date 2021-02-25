@@ -1,6 +1,5 @@
 package src;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import src.DataStructures.*;
 
 import java.io.*;
@@ -144,6 +143,10 @@ public class Utils {
             }
 
             return new InputParam(N, K, vehicles, nodes, alpha, beta);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Incorrect format of .dat file. " + e.getMessage());
@@ -559,6 +562,10 @@ public class Utils {
      */
     public static boolean doubleEqual(double n1, double n2) {
         return Math.abs(n1 - n2) < Math.pow(10, -5);
+    }
+
+    public static String separator() {
+        return File.separator;
     }
 
 }

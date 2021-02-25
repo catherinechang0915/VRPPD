@@ -13,27 +13,28 @@ public abstract class Destructor {
 
     protected InputParam inputParam;
     protected int q;
+    protected double percentLo;
+    protected double percentHi;
     protected List<Integer> nodePair;
 
-    public Destructor(InputParam inputParam, double percent) {
+    public Destructor(InputParam inputParam, double percentLo, double percentHi) {
         this.inputParam = inputParam;
-        q = Math.max(1, (int) (percent * inputParam.getN()));
+        this.percentLo = percentLo;
+        this.percentHi = percentHi;
+        this.q = -1;
     }
 
-    public abstract void destroy(Solution solution);
-
-    /**
-     * Must be called after destroy(), otherwise throw exception, return request set to be used later
-     * for insertion by constructor
-     * @return requests removed from current solution
-     */
-    public List<Integer> getNodePair() {
-        if (nodePair == null) {
-            throw new NullPointerException();
-        } else {
-            return nodePair;
-        }
+    public List<Integer> destroy(Solution solution) {
+        setRandomQ();
+        destroyNodePair(solution);
+        // for (int num : nodePair) {
+        //     System.out.print(num + " ");
+        // }
+        // System.out.println();
+        return nodePair;
     }
+
+    protected abstract void destroyNodePair(Solution solution);
 
     /**
      * Destroy Operator: remove nodes in nodePair
@@ -41,7 +42,6 @@ public abstract class Destructor {
      * @param nodePair request set to be removed
      */
     protected void destroy(Solution sol, List<Integer> nodePair) {
-        Node[] nodes = inputParam.getNodes();
         List<Node> routeNodes = null;
         for (Route route : sol.getRoutes()) {
             routeNodes = route.getNodes();
@@ -102,5 +102,22 @@ public abstract class Destructor {
         }
         route.setDist(dist);
         route.setPenalty(penalty);
+    }
+
+    /**
+     * Introduce y^p for randomness
+     * @return index to remove in request set
+     */
+    protected int getRandomPos(int p, int remainSize) {
+        double y = Math.random();
+        return (int)(remainSize * Math.pow(y, p));
+    }
+
+    /**
+     * Random select q (number of requests to remove) between lower and upper threshold
+     */
+    public void setRandomQ() {
+        double percent = Math.random() * (this.percentHi - this.percentLo) + this.percentLo;
+        this.q = (int) (inputParam.getN() * percent);
     }
 }

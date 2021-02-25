@@ -78,4 +78,9 @@ public class Route implements Serializable {
     public double getObjective(double alpha, double beta) {
         return alpha * dist + beta * penalty;
     }
+
+    @Override
+    public int hashCode() {
+        return route.hashCode();
+    }
 }

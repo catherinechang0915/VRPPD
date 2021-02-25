@@ -3,6 +3,7 @@ package src.DataStructures;
 import src.Utils;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -120,5 +121,15 @@ public class Solution implements Serializable {
 
     public double getObjective(double alpha, double beta) {
         return alpha * totalDist + beta * totalPenalty;
+    }
+
+    @Override
+    public int hashCode() {
+        List<Integer> hashes = new LinkedList<>();
+        for (Route r : sol) {
+            hashes.add(r.hashCode());
+        }
+        Collections.sort(hashes);
+        return hashes.hashCode();
     }
 }

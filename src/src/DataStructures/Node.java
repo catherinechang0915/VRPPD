@@ -134,4 +134,9 @@ public class Node implements Serializable {
     public void setDL(double DL) {
         this.DL = DL;
     }
+
+    @Override
+    public int hashCode() {
+        return ((Integer) index).hashCode();
+    }
 }

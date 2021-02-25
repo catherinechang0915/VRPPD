@@ -19,7 +19,7 @@ public class OPLSolver implements Solver{
     private Solution solution;
 
     public OPLSolver (String dataFilePath) {
-        this("src\\VRP.mod", dataFilePath);
+        this("src" + Utils.separator() + ".mod", dataFilePath);
     }
 
     /**

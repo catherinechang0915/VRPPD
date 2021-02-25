@@ -37,8 +37,8 @@ public class Main {
                 exit("Wrong format of debug solver type.");
             }
 
-            Solver debugSolver;
-            if (type == 1) {
+            Solver debugSolver = null;
+            if (type == 3) {
                 int destructorType = -1, constructorType = -1;
                 try {
                     destructorType = Integer.parseInt(args[3]);
@@ -47,9 +47,14 @@ public class Main {
                     exit("Wrong format of operator type.");
                 }
                 debugSolver = new MySolver(args[2], destructorType, constructorType);
+            } else if (type == 2) {
+                // debugSolver = new ALNSSolver();
+            } else if (type == 1) {
+                debugSolver = new OPLSolver(args[2]);
+            } else {
+                exit("Wrong solver type.");
             }
-            else debugSolver = new OPLSolver(args[2]);
-            debugSolver.solve("src\\debug.txt::x");
+            debugSolver.solve("src" + Utils.separator() + "debug.txt");
             return;
         }
 
@@ -67,10 +72,11 @@ public class Main {
         }
 
         String optimalVehicleOn = mode == 1 ? "_optimalVehicle" : "";
-        String dataDir = "data\\pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + "\\" + alpha + "_" + beta + "\\";
-        String resDirOPL = "res\\opl\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
-        String resDirHEU = "res\\heu\\pdp_" + n + "_mem_" + memberPercent + "\\" + alpha + "_" + beta + "\\";
-        String resFile = "res\\pdp_" + n + "_mem_" + memberPercent + "_" + alpha + "_" + beta;
+        String sp = Utils.separator();
+        String dataDir = "data" + sp + "pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + sp + alpha + "_" + beta + sp;
+        String resDirOPL = "res" + sp + "opl" + sp + "pdp_" + n + "_mem_" + memberPercent + sp + alpha + "_" + beta + sp;
+        String resDirHEU = "res" + sp + "heu" + sp + "pdp_" + n + "_mem_" + memberPercent + sp + alpha + "_" + beta + sp;
+        String resFile = "res" + sp + "pdp_" + n + "_mem_" + memberPercent + "_" + alpha + "_" + beta;
 
         List<String> files = Utils.fileListNoExtension(dataDir);
         if (files.size() == 0) {
@@ -124,8 +130,8 @@ public class Main {
             long totalAvgTime = 0;
             generateAggregationFileHeader(resAggregationFilename);
             if (memberPercent == 1.0) {
-                kMap = Utils.getVehicleNumber("raw_data\\pdp_" + n + "\\optimal.txt");
-                objMap = Utils.getOptimalObj("raw_data\\pdp_" + n + "\\optimal.txt");
+                kMap = Utils.getVehicleNumber("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
+                objMap = Utils.getOptimalObj("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
                 generateGapFileHeader(resGapFilename);
             }
 
@@ -231,6 +237,5 @@ public class Main {
                 .append(String.format("%-15f", objective)).append("\n");
         Utils.writeToFile(sb.toString(), filepath, true);
     }
-
 
 }

@@ -9,12 +9,12 @@ import java.util.Random;
 
 public class RandomDestructor extends Destructor{
 
-    public RandomDestructor(InputParam inputParam, double percent) {
-        super(inputParam, percent);
+    public RandomDestructor(InputParam inputParam, double percentLo, double percentHi) {
+        super(inputParam, percentLo, percentHi);
     }
 
     @Override
-    public void destroy(Solution solution) {
+    public void destroyNodePair(Solution solution) {
         nodePair = generateNodePairRandom();
         destroy(solution, nodePair);
     }

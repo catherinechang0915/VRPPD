@@ -14,16 +14,20 @@ public class MySolver implements Solver{
 
     public MySolver(String dataFilePath, int destructorIndex, int constructorIndex) {
         this.inputParam = Utils.readParam(dataFilePath);
-        double percent = 0.15;
+        double percentLo = 0.2;
+        double percentHi = 0.4;
         switch (destructorIndex) {
             case 0:
-                this.destructor = new RandomDestructor(inputParam, percent);
+                this.destructor = new RandomDestructor(inputParam, percentLo, percentHi);
                 break;
             case 1:
-                this.destructor = new WorstDestructor(inputParam, percent);
+                this.destructor = new ShawDestructor(inputParam, percentLo, percentHi);
                 break;
             case 2:
-                this.destructor = new ShawDestructor(inputParam, percent);
+                this.destructor = new WorstDestructor(inputParam, percentLo, percentHi);
+                break;
+            case 3:
+                this.destructor = new WorstDelayDestructor(inputParam, percentLo, percentHi);
                 break;
         }
         switch (constructorIndex) {
@@ -67,19 +71,20 @@ public class MySolver implements Solver{
             prevSol = Utils.serialize(sol);
 
             // Destroy
-            destructor.destroy(sol);
-            nodePair = destructor.getNodePair();
+            nodePair = destructor.destroy(sol);
 
             // Construct
             constructor.construct(sol, nodePair);
-//            validation(sol);
+            // validation(sol);
 
-            if (sol.getObjective(alpha, beta) < bestObj) {
+            double currObj = sol.getObjective(alpha, beta);
+
+            if (currObj < bestObj) {
                 bestObj = sol.getObjective(alpha, beta);
                 bestSol = Utils.serialize(sol);
             }
 
-            if (T < (sol.getObjective(alpha, beta) - bestObj) / bestObj) {
+            if (T < (currObj - bestObj) / bestObj) {
                 // not accept if worse than global and not meeting criteria, rollback
                 sol = Utils.deserialize(prevSol);
 //                System.out.println("not accepted");
@@ -90,13 +95,14 @@ public class MySolver implements Solver{
         bestToReturn.setTimeElapsed(System.currentTimeMillis() - startTime);
         solution = bestToReturn;
         writeToFile(resFilePath);
+        System.out.println(bestObj);
     }
 
     /**
      * Initialize the solution by calling InitialConstructor using greedy insertion
      * @return initial solution
      */
-    private Solution init() {
+    public Solution init() {
         List<Route> routes = new LinkedList<>();
         Vehicle[] vehicles = inputParam.getVehicles();
         for (int routeCount = 0; routeCount < inputParam.getK(); routeCount++) {

@@ -1,7 +1,6 @@
 package src.Operator;
 
 import src.DataStructures.*;
-import src.MySolver;
 
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -10,22 +9,20 @@ import java.util.PriorityQueue;
 
 public class WorstDestructor extends Destructor {
 
-    // TODO: may modify later
-    private final int randomRange = 3;
+    private final int p = 6;
 
-    public WorstDestructor(InputParam inputParam, double percent) {
-        super(inputParam, percent);
+    public WorstDestructor(InputParam inputParam, double percentLo, double percentHi) {
+        super(inputParam, percentLo, percentHi);
     }
 
     /**
      * Remove requests that would result in maximum objective decrease, and update the solution
      * @param solution solution contains requests to be removed
      */
-    @Override
-    public void destroy(Solution solution) {
+    public void destroyNodePair(Solution solution) {
         nodePair = new LinkedList<>();
         while (nodePair.size() < q) {
-            InsertPosition pos = findDestroyPosition(solution, randomRange);
+            InsertPosition pos = findDestroyPosition(solution, inputParam.getN() - nodePair.size());
             if (pos == null) {
                 throw new NullPointerException("Wrong code. Should always have feasible "
                         + "removal position in worst destroy operator");
@@ -44,19 +41,23 @@ public class WorstDestructor extends Destructor {
      * @param size determine the randomness
      * @return random choice among best size destroy position as InsertPosition object
      */
-    private InsertPosition findDestroyPosition(Solution solution, int size) {
+    private InsertPosition findDestroyPosition(Solution solution, int remainSize) {
+        int rand = getRandomPos(p, remainSize);
         PriorityQueue<InsertPosition> pq = new PriorityQueue<>(Comparator.comparingDouble(
-                o -> - inputParam.getAlpha() * o.getDistIncrease() - inputParam.getBeta() * o.getPenaltyIncrease()));
+                o -> - inputParam.getAlpha() * o.getDistIncrease() - inputParam.getBeta() * o.getPenaltyIncrease())); 
+                // negative increase, smaller absolute value on top
+                // want bigger cost in increase (ele at bottom)
         for (Route route : solution.getRoutes()) {
             for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
                 InsertPosition pos = checkNodePairDestroy(route, pIndex);
-                if (pos == null) continue; // infeasible
+                if (pos == null) continue; // delivery node, already checked
                 pq.add(pos);
-                if (pq.size() > size) pq.poll();
+                if (pq.size() > rand + 1) {
+                    pq.poll();
+                }
             }
         }
-        int rand = (int)(Math.random() * pq.size());
-        for (int i = 0; i < rand; i++) {
+        while (pq.size() > rand + 1) {
             pq.poll();
         }
         return pq.poll();
@@ -119,7 +120,6 @@ public class WorstDestructor extends Destructor {
         Node currNode = null;
 
         // initialization to be the value before the node to be inserted
-        double load = prevPNode.getQ();
         double time = prevPNode.getT();
 
         // calculate along iterating the nodes after, before insertion

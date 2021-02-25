@@ -10,6 +10,7 @@ import java.util.*;
 public class DataGenerator {
 
     public DataGenerator(int n, double memberPercent, double alpha, double beta, int optimalVehicle) {
+        String sp = Utils.separator();
         int N = -1;
         if (n % 2 != 0) {
             System.out.println("Number of nodes cannot form pairs.");
@@ -27,7 +28,7 @@ public class DataGenerator {
             System.exit(1);
         }
 
-        String inputDir = "raw_data\\" + "pdp_" + N + "\\";
+        String inputDir = "raw_data" + sp + "pdp_" + N + sp;
         List<String> filenames = Utils.fileListNoExtension(inputDir);
         if (filenames.size() == 0) {
             System.out.println("No files in the directory " + inputDir + " . Data generation failed.");
@@ -35,7 +36,7 @@ public class DataGenerator {
         }
 
         String optimalVehicleOn = optimalVehicle == 1 ? "_optimalVehicle" : "";
-        String outputDir = "data\\" + "pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + "\\"
+        String outputDir = "data" + sp + "pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + sp
                 + alpha + "_" + beta + "\\";
         Utils.createDirectory(outputDir);
 

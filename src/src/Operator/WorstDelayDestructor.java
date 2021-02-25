@@ -2,17 +2,16 @@ package src.Operator;
 
 import src.DataStructures.*;
 
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 
 public class WorstDelayDestructor extends Destructor {
 
-    private final int randomRange = 3;
+    private final int p = 6;
 
-    public WorstDelayDestructor(InputParam inputParam, double percent) {
-        super(inputParam, percent);
+    public WorstDelayDestructor(InputParam inputParam, double percentLo, double percentHi) {
+        super(inputParam, percentLo, percentHi);
     }
 
     /**
@@ -20,10 +19,10 @@ public class WorstDelayDestructor extends Destructor {
      * @param solution solution contains requests to be removed
      */
     @Override
-    public void destroy(Solution solution) {
+    public void destroyNodePair(Solution solution) {
         nodePair = new LinkedList<>();
         while (nodePair.size() < q) {
-            InsertPosition pos = findDestroyPosition(solution, randomRange);
+            InsertPosition pos = findDestroyPosition(solution, inputParam.getN() - nodePair.size());
             if (pos == null) {
                 throw new NullPointerException("Wrong code. Should always have feasible "
                         + "removal position in worst destroy operator");
@@ -42,19 +41,24 @@ public class WorstDelayDestructor extends Destructor {
      * @param size determine the randomness
      * @return random choice among best size destroy position as InsertPosition object
      */
-    private InsertPosition findDestroyPosition(Solution solution, int size) {
-        PriorityQueue<InsertPosition> pq = new PriorityQueue<>(Comparator.comparingDouble(
-                o -> - inputParam.getBeta() * o.getPenaltyIncrease()));
+    private InsertPosition findDestroyPosition(Solution solution, int remainSize) {
+        int rand = getRandomPos(p, remainSize);
+        PriorityQueue<InsertPosition> pq = new PriorityQueue<>((o1, o2) -> {
+                double d1 = o1.getPenaltyIncrease(), d2 = o2.getPenaltyIncrease();
+                if (d1 != d2) return Double.compare(d2, d1);
+                return Double.compare(o2.getDistIncrease(), o1.getDistIncrease());
+            });
         for (Route route : solution.getRoutes()) {
             for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
                 InsertPosition pos = checkNodePairDestroy(route, pIndex);
-                if (pos == null) continue; // infeasible
+                if (pos == null) continue; // delivery node, already checked
                 pq.add(pos);
-                if (pq.size() > size) pq.poll();
+                if (pq.size() > rand + 1) {
+                    pq.poll();
+                }
             }
         }
-        int rand = (int)(Math.random() * pq.size());
-        for (int i = 0; i < rand; i++) {
+        while (pq.size() > rand + 1) {
             pq.poll();
         }
         return pq.poll();
