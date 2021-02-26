@@ -8,58 +8,86 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ALNSSolver implements Solver {
+
+public class ALNSSolver extends Solver {
 
     private InputParam inputParam;
     private double r = 0.1;
     private int sigma1 = 33;
     private int sigma2 = 9;
     private int sigma3 = 13;
+    private int noise;
     private Solution solution;
     private double[] destructorWeights;
     private double[] constructorWeights;
-    private int[] destructorScores;
-    private int[] constructorScores;
+    private double[] destructorNormalizedWeights;
+    private double[] constructorNormalizedWeights;
+    private double[] destructorScores;
+    private double[] constructorScores;
     private int[] destructorCounts;
     private int[] constructorCounts;
     private Destructor[] destructors;
     private Constructor[] constructors;
 
-    public ALNSSolver(String dataFilePath) {
-        this.inputParam = Utils.readParam(dataFilePath);
-        double percent = 0.15;
+    public ALNSSolver(int noise) {
+        this.noise = noise;
+        double percentLo = 0.2;
+        double percentHi = 0.4;
         int destructorsNum = 4;
         int constructorsNum = 5;
+        if (noise == 1) constructorsNum *= 2;
         destructorWeights = new double[destructorsNum];
         constructorWeights = new double[constructorsNum];
+        destructorNormalizedWeights = new double[destructorsNum];
+        constructorNormalizedWeights = new double[constructorsNum];
         Arrays.fill(destructorWeights, 1.0 / destructorsNum);
         Arrays.fill(constructorWeights, 1.0 / constructorsNum);
-        destructorScores = new int[destructorsNum];
-        constructorScores = new int[constructorsNum];
+        Arrays.fill(destructorNormalizedWeights, 1.0 / destructorsNum);
+        Arrays.fill(constructorNormalizedWeights, 1.0 / constructorsNum);
+        destructorScores = new double[destructorsNum];
+        constructorScores = new double[constructorsNum];
         destructorCounts = new int[destructorsNum];
         constructorCounts = new int[constructorsNum];
         destructors = new Destructor[] {
-                new RandomDestructor(inputParam, percent),
-                new WorstDestructor(inputParam, percent),
-                new ShawDestructor(inputParam, percent),
-                new WorstDelayDestructor(inputParam, percent)
+                new RandomDestructor(percentLo, percentHi),
+                new WorstDestructor(percentLo, percentHi),
+                new ShawDestructor(percentLo, percentHi),
+                new WorstDelayDestructor(percentLo, percentHi)
         };
-        constructors = new Constructor[] {
-                new RegretConstructor(inputParam, -1),
-                new RegretConstructor(inputParam, 1),
-                new RegretConstructor(inputParam, 2),
-                new RegretConstructor(inputParam, 3),
-                new RegretConstructor(inputParam, 4)
-        };
+        if (noise == 0) {
+            constructors = new Constructor[] {
+                new RegretConstructor(-1, 0),
+                new RegretConstructor(1, 0),
+                new RegretConstructor(2, 0),
+                new RegretConstructor(3, 0),
+                new RegretConstructor(4, 0)
+            };
+        } else {
+            constructors = new Constructor[] {
+                new RegretConstructor(-1, 0),
+                new RegretConstructor(1, 0),
+                new RegretConstructor(2, 0),
+                new RegretConstructor(3, 0),
+                new RegretConstructor(4, 0),
+                new RegretConstructor(-1, 1),
+                new RegretConstructor(1, 1),
+                new RegretConstructor(2, 1),
+                new RegretConstructor(3, 1),
+                new RegretConstructor(4, 1)
+            };
+        }
     }
+
+
     @Override
-    public void solve(String resFilePath) {
+    public void solve(String dataFilePath, String resFilePath) {
+        InputParam inputParam = Utils.readParam(dataFilePath);
         double alpha = inputParam.getAlpha(), beta = inputParam.getBeta();
-        int MAX_ITER = 10000;
+        int MAX_ITER = 500;
         int segments = 100;
 
         long startTime = System.currentTimeMillis();
-        Solution sol = init();
+        Solution sol = init(inputParam);
 
         HashSet<Integer> acceptedSolution = new HashSet<>();
         acceptedSolution.add(sol.hashCode());
@@ -77,6 +105,9 @@ public class ALNSSolver implements Solver {
         double prevObj = -1;
         byte[] prevSol = null;
 
+        String bestObjs = "";
+        String currObjs = "";
+
         for (int i = 0; i < MAX_ITER / segments; i++) {
             Arrays.fill(destructorScores, 0);
             Arrays.fill(constructorScores, 0);
@@ -89,38 +120,35 @@ public class ALNSSolver implements Solver {
                 // Destroy
                 int destructorType = chooseDestructor();
                 destructor = destructors[destructorType];
-                destructor.destroy(sol);
-                nodePair = destructor.getNodePair();
-                //            validation(sol);
+                nodePair = destructor.destroy(inputParam, sol);
+                validation(sol);
 
                 // Construct
                 int constructorType = chooseConstructor();
                 constructor = constructors[constructorType];
-                constructor.construct(sol, nodePair);
-                //            validation(sol);
+                constructor.construct(inputParam, sol, nodePair);
+                validation(sol);
 
-                if (sol.getObjective(alpha, beta) < bestObj) {
-                    bestObj = sol.getObjective(alpha, beta);
+                double currObj = sol.getObjective(alpha, beta);
+                if (currObj < bestObj) {
+                    bestObj = currObj;
                     bestSol = Utils.serialize(sol);
                     destructorScores[destructorType] += sigma1;
                     constructorScores[constructorType] += sigma1;
                 }
 
-                if (T < (sol.getObjective(alpha, beta) - bestObj) / bestObj) {
+                if (T < (currObj - bestObj) / bestObj) {
                     // not accept if worse than global and not meeting criteria, rollback
                     sol = Utils.deserialize(prevSol);
-//                    System.out.println("not accepted");
                 } else {
                     // accepted
-                    destructorCounts[destructorType]++;
-                    constructorCounts[constructorType]++;
-                    // only reward unaccepted solution
+                    // only reward unvisited solution
                     if (!acceptedSolution.contains(sol.hashCode())) {
                         // accepted with improving objective
-                        if (sol.getObjective(alpha, beta) < prevObj) {
+                        if (currObj < prevObj) {
                             destructorScores[destructorType] += sigma2;
                             constructorScores[constructorType] += sigma2;
-                            // accepted with worse objective
+                        // accepted with worse objective
                         } else {
                             destructorScores[destructorType] += sigma3;
                             constructorScores[constructorType] += sigma3;
@@ -128,67 +156,65 @@ public class ALNSSolver implements Solver {
                     }
                     acceptedSolution.add(sol.hashCode());
                 }
+                destructorCounts[destructorType]++;
+                constructorCounts[constructorType]++;
                 T -= coolingRate;
+                bestObjs += bestObj + "\n";
+                currObjs += currObj + "\n";
             }
             // update weights
-            for (int k = 0; k < destructorWeights.length; k++) {
-                destructorWeights[k] = destructorWeights[k] * (1 - r) + r * destructorScores[k] / destructorCounts[k];
-            }
-            for (int k = 0; k < constructorWeights.length; k++) {
-                constructorWeights[k] = constructorWeights[k] * (1 - r) + r * constructorScores[k] / constructorCounts[k];
-            }
+            updateweights(destructorWeights, destructorScores, destructorCounts);
+            updateweights(constructorWeights, constructorScores, constructorCounts);
+            normalizeWeights(destructorWeights, destructorNormalizedWeights);
+            normalizeWeights(constructorWeights, constructorNormalizedWeights);
         }
         Solution bestToReturn = Utils.deserialize(bestSol);
         bestToReturn.setTimeElapsed(System.currentTimeMillis() - startTime);
         solution = bestToReturn;
         writeToFile(resFilePath);
+        Utils.writeToFile(bestObjs, "src/bestObjs.txt", false);
+        Utils.writeToFile(currObjs, "src/objs.txt", false);
     }
 
+    private void normalizeWeights(double[] weights, double[] normalizedWeights) {
+        double sum = 0;
+        for (int k = 0; k < weights.length; k++) {
+            sum += weights[k];
+        }
+        for (int k = 0; k < weights.length; k++) {
+            normalizedWeights[k] = weights[k] / sum;
+        }
+    }
+    
     /**
-     * Initialize the solution by calling InitialConstructor using greedy insertion
-     * @return initial solution
+     * update weights for next segment based on the average score in this segment
      */
-    private Solution init() {
-        List<Route> routes = new LinkedList<>();
-        Vehicle[] vehicles = inputParam.getVehicles();
-        for (int routeCount = 0; routeCount < inputParam.getK(); routeCount++) {
-            routes.add(new Route(new LinkedList<>(), vehicles[routeCount]));
+    private void updateweights(double[] weights, double[] scores, int[] counts) {
+        for (int k = 0; k < weights.length; k++) {
+            if (counts[k] == 0) {
+                System.out.println("?");
+                weights[k] = weights[k] * (1 - r);
+            } else {
+                weights[k] = weights[k] * (1 - r) + r * scores[k] / counts[k];
+            }
         }
-        Solution solution = new Solution(routes, 0, 0);
-
-        Constructor initialConstructor = new InitialConstructor(inputParam);
-        // store the unprocessed request pairs
-        List<Integer> nodePairNotProcessed = new LinkedList<>();
-        for (int i = 1; i <= inputParam.getN(); i++) {
-            nodePairNotProcessed.add(i);
-        }
-        initialConstructor.construct(solution, nodePairNotProcessed);
-        return solution;
     }
 
     private int chooseDestructor() {
-        double sum = 0;
-        for (double weight : destructorWeights) {
-            sum += weight;
-        }
         double temp = 0;
         double rand = Math.random();
-        for (int i = 0; i < destructorWeights.length; i++) {
-            temp += destructorWeights[i] / sum;
+        for (int i = 0; i < destructorNormalizedWeights.length; i++) {
+            temp += destructorNormalizedWeights[i];
             if (rand < temp) return i;
         }
         return -1;
     }
 
     private int chooseConstructor() {
-        double sum = 0;
-        for (double weight : constructorWeights) {
-            sum += weight;
-        }
         double temp = 0;
         double rand = Math.random();
-        for (int i = 0; i < constructorWeights.length; i++) {
-            temp += constructorWeights[i] / sum;
+        for (int i = 0; i < constructorNormalizedWeights.length; i++) {
+            temp += constructorNormalizedWeights[i];
             if (rand < temp) return i;
         }
         return -1;
@@ -197,11 +223,6 @@ public class ALNSSolver implements Solver {
     @Override
     public Solution getSolverSolution() {
         return solution;
-    }
-
-    @Override
-    public double getSolverObjective() {
-        return solution.getObjective(inputParam.getAlpha(), inputParam.getBeta());
     }
 
     /**
@@ -244,5 +265,10 @@ public class ALNSSolver implements Solver {
 
     private void writeToFile(String filePath) {
         solution.writeToFile(filePath, false);
+    }
+
+    @Override
+    public String toString() {
+        return "ALNS";
     }
 }

@@ -37,7 +37,7 @@ public class DataGenerator {
 
         String optimalVehicleOn = optimalVehicle == 1 ? "_optimalVehicle" : "";
         String outputDir = "data" + sp + "pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + sp
-                + alpha + "_" + beta + "\\";
+                + alpha + "_" + beta + sp;
         Utils.createDirectory(outputDir);
 
         if (optimalVehicle == 0) {

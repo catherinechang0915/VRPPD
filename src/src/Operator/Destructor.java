@@ -11,42 +11,36 @@ import java.util.List;
 
 public abstract class Destructor {
 
-    protected InputParam inputParam;
     protected int q;
     protected double percentLo;
     protected double percentHi;
     protected List<Integer> nodePair;
 
-    public Destructor(InputParam inputParam, double percentLo, double percentHi) {
-        this.inputParam = inputParam;
+    public Destructor(double percentLo, double percentHi) {
         this.percentLo = percentLo;
         this.percentHi = percentHi;
         this.q = -1;
     }
 
-    public List<Integer> destroy(Solution solution) {
-        setRandomQ();
-        destroyNodePair(solution);
-        // for (int num : nodePair) {
-        //     System.out.print(num + " ");
-        // }
-        // System.out.println();
+    public List<Integer> destroy(InputParam inputParam, Solution solution) {
+        setRandomQ(inputParam.getN());
+        destroyNodePair(inputParam, solution);
         return nodePair;
     }
 
-    protected abstract void destroyNodePair(Solution solution);
+    protected abstract void destroyNodePair(InputParam inputParam, Solution solution);
 
     /**
      * Destroy Operator: remove nodes in nodePair
      * @param sol solution to be operated on
      * @param nodePair request set to be removed
      */
-    protected void destroy(Solution sol, List<Integer> nodePair) {
+    protected void destroy(int N, Solution sol, List<Integer> nodePair) {
         List<Node> routeNodes = null;
         for (Route route : sol.getRoutes()) {
             routeNodes = route.getNodes();
             for (Node node : new LinkedList<>(routeNodes)) {
-                if (nodePair.contains(node.getIndex()) || nodePair.contains(node.getIndex() - inputParam.getN())) {
+                if (nodePair.contains(node.getIndex()) || nodePair.contains(node.getIndex() - N)) {
                     routeNodes.remove(node);
                 }
             }
@@ -116,8 +110,8 @@ public abstract class Destructor {
     /**
      * Random select q (number of requests to remove) between lower and upper threshold
      */
-    public void setRandomQ() {
+    public void setRandomQ(int N) {
         double percent = Math.random() * (this.percentHi - this.percentLo) + this.percentLo;
-        this.q = (int) (inputParam.getN() * percent);
+        this.q = (int) (N * percent);
     }
 }

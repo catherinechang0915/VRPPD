@@ -554,6 +554,16 @@ public class Utils {
                 + (n1.getY() - n2.getY()) * (n1.getY() - n2.getY()));
     }
 
+    public static double findMaxDistance(double[][] distanceMatrix) {
+        double maxDis = 0;
+        for (int i = 0; i < distanceMatrix.length; i++) {
+            for (int j = 0; j < distanceMatrix[0].length; j++) {
+                maxDis = Math.max(maxDis, distanceMatrix[i][j]);
+            }
+        }
+        return maxDis;
+    }
+
     /**
      * Check if two double are equal within tolerance
      * @param n1 node1

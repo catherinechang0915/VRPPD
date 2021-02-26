@@ -14,14 +14,14 @@ public class ShawDestructor extends Destructor{
 
     private final int p = 6;
 
-    public ShawDestructor(InputParam inputParam, double percentLo, double percentHi) {
-        super(inputParam, percentLo, percentHi);
+    public ShawDestructor(double percentLo, double percentHi) {
+        super(percentLo, percentHi);
     }
 
     @Override
-    public void destroyNodePair(Solution solution) {
-        nodePair = generateNodePairShaw();
-        destroy(solution, nodePair);
+    public void destroyNodePair(InputParam inputParam, Solution solution) {
+        nodePair = generateNodePairShaw(inputParam);
+        destroy(inputParam.getN(),solution, nodePair);
     }
 
     /**
@@ -29,7 +29,7 @@ public class ShawDestructor extends Destructor{
      * each iteration, and found the closely related 3 requests, randomly add one to the request set
      * @return request set
      */
-    private List<Integer> generateNodePairShaw() {
+    private List<Integer> generateNodePairShaw(InputParam inputParam) {
         int N = inputParam.getN();
         Node[] nodes = inputParam.getNodes();
         List<Integer> nodePair = new LinkedList<>();
@@ -59,7 +59,7 @@ public class ShawDestructor extends Destructor{
     /**
      * For debug use
      */
-    private List<Integer> generateNodePairShaw(int q, int rand) {
+    private List<Integer> generateNodePairShaw(int q, int rand, InputParam inputParam) {
         int N = inputParam.getN();
         Node[] nodes = inputParam.getNodes();
         List<Integer> nodePair = new LinkedList<>();

@@ -5,58 +5,56 @@ import src.Operator.*;
 
 import java.util.*;
 
-public class MySolver implements Solver{
+public class MySolver extends Solver{
 
-    private InputParam inputParam;
-    private Solution solution;
     private Destructor destructor;
     private Constructor constructor;
 
-    public MySolver(String dataFilePath, int destructorIndex, int constructorIndex) {
-        this.inputParam = Utils.readParam(dataFilePath);
+    public MySolver(int destructorIndex, int constructorIndex, int noise) {
         double percentLo = 0.2;
         double percentHi = 0.4;
         switch (destructorIndex) {
             case 0:
-                this.destructor = new RandomDestructor(inputParam, percentLo, percentHi);
+                this.destructor = new RandomDestructor(percentLo, percentHi);
                 break;
             case 1:
-                this.destructor = new ShawDestructor(inputParam, percentLo, percentHi);
+                this.destructor = new ShawDestructor(percentLo, percentHi);
                 break;
             case 2:
-                this.destructor = new WorstDestructor(inputParam, percentLo, percentHi);
+                this.destructor = new WorstDestructor(percentLo, percentHi);
                 break;
             case 3:
-                this.destructor = new WorstDelayDestructor(inputParam, percentLo, percentHi);
+                this.destructor = new WorstDelayDestructor(percentLo, percentHi);
                 break;
         }
         switch (constructorIndex) {
             case 0:
-                this.constructor = new RegretConstructor(inputParam, -1);
+                this.constructor = new RegretConstructor(-1, noise);
                 break;
             case 1:
-                this.constructor = new RegretConstructor(inputParam, 1);
+                this.constructor = new RegretConstructor(1, noise);
                 break;
             case 2:
-                this.constructor = new RegretConstructor(inputParam, 2);
+                this.constructor = new RegretConstructor(2, noise);
                 break;
             case 3:
-                this.constructor = new RegretConstructor(inputParam, 3);
+                this.constructor = new RegretConstructor(3, noise);
                 break;
             case 4:
-                this.constructor = new RegretConstructor(inputParam, 4);
+                this.constructor = new RegretConstructor(4, noise);
                 break;
         }
     }
 
     @Override
-    public void solve(String resFilePath) {
+    public void solve(String dataFilePath, String resFilePath) {
 
+        InputParam inputParam = Utils.readParam(dataFilePath);
         double alpha = inputParam.getAlpha(), beta = inputParam.getBeta();
-        int MAX_ITER = 10000;
+        int MAX_ITER = 150;
 
         long startTime = System.currentTimeMillis();
-        Solution sol = init();
+        Solution sol = init(inputParam);
 
         byte[] bestSol = Utils.serialize(sol);
         double bestObj = sol.getObjective(alpha, beta);
@@ -71,12 +69,11 @@ public class MySolver implements Solver{
             prevSol = Utils.serialize(sol);
 
             // Destroy
-            nodePair = destructor.destroy(sol);
+            nodePair = destructor.destroy(inputParam, sol);
 
             // Construct
-            constructor.construct(sol, nodePair);
+            constructor.construct(inputParam, sol, nodePair);
             // validation(sol);
-
             double currObj = sol.getObjective(alpha, beta);
 
             if (currObj < bestObj) {
@@ -87,7 +84,6 @@ public class MySolver implements Solver{
             if (T < (currObj - bestObj) / bestObj) {
                 // not accept if worse than global and not meeting criteria, rollback
                 sol = Utils.deserialize(prevSol);
-//                System.out.println("not accepted");
             }
             T -= coolingRate;
         }
@@ -95,39 +91,11 @@ public class MySolver implements Solver{
         bestToReturn.setTimeElapsed(System.currentTimeMillis() - startTime);
         solution = bestToReturn;
         writeToFile(resFilePath);
-        System.out.println(bestObj);
-    }
-
-    /**
-     * Initialize the solution by calling InitialConstructor using greedy insertion
-     * @return initial solution
-     */
-    public Solution init() {
-        List<Route> routes = new LinkedList<>();
-        Vehicle[] vehicles = inputParam.getVehicles();
-        for (int routeCount = 0; routeCount < inputParam.getK(); routeCount++) {
-            routes.add(new Route(new LinkedList<>(), vehicles[routeCount]));
-        }
-        Solution solution = new Solution(routes, 0, 0);
-
-        Constructor initialConstructor = new InitialConstructor(inputParam);
-        // store the unprocessed request pairs
-        List<Integer> nodePairNotProcessed = new LinkedList<>();
-        for (int i = 1; i <= inputParam.getN(); i++) {
-            nodePairNotProcessed.add(i);
-        }
-        initialConstructor.construct(solution, nodePairNotProcessed);
-        return solution;
     }
 
     @Override
     public Solution getSolverSolution() {
         return solution;
-    }
-
-    @Override
-    public double getSolverObjective() {
-        return solution.getObjective(inputParam.getAlpha(), inputParam.getBeta());
     }
 
     /**
@@ -170,6 +138,11 @@ public class MySolver implements Solver{
 
     private void writeToFile(String filePath) {
         solution.writeToFile(filePath, false);
+    }
+
+    @Override
+    public String toString() {
+        return destructor + "_" + constructor;
     }
 
 }

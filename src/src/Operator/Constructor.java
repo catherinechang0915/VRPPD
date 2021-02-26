@@ -6,13 +6,10 @@ import java.util.List;
 
 public abstract class Constructor {
 
-    protected InputParam inputParam;
-
-    public Constructor(InputParam inputParam) {
-        this.inputParam = inputParam;
+    public Constructor() {
     }
 
-    public abstract void construct(Solution solution, List<Integer> nodePar);
+    public abstract void construct(InputParam inputParam, Solution solution, List<Integer> nodePar);
 
     /**
      * Insert node[nodeIndex] at pIndex, node[nodeIndex + N] at dIndex
@@ -20,7 +17,7 @@ public abstract class Constructor {
      * @param pos contains: index for node pair, pickup node insert in route at position pIndex,
      *            delivery node insert in route at position dIndex
      */
-    protected void nodeInsertion(InsertPosition pos) {
+    protected void nodeInsertion(InputParam inputParam, InsertPosition pos) {
         Route route = pos.getRoute();
         int nodeIndex = pos.getNodeIndex();
         int pIndex = pos.getpIndex();
@@ -62,7 +59,7 @@ public abstract class Constructor {
      * @param dIndex delivery node insert in route at position dIndex
      * @return dist increase and penalty increase
      */
-    protected InsertPosition checkNodePairInsertion(Route route, int nodeIndex, int pIndex, int dIndex) {
+    protected InsertPosition checkNodePairInsertion(InputParam inputParam, Route route, int nodeIndex, int pIndex, int dIndex) {
 
         List<Node> routeNodes = route.getNodes();
 

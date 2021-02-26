@@ -7,24 +7,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+
 public class RandomDestructor extends Destructor{
 
-    public RandomDestructor(InputParam inputParam, double percentLo, double percentHi) {
-        super(inputParam, percentLo, percentHi);
+    public RandomDestructor(double percentLo, double percentHi) {
+        super(percentLo, percentHi);
     }
 
     @Override
-    public void destroyNodePair(Solution solution) {
-        nodePair = generateNodePairRandom();
-        destroy(solution, nodePair);
+    public void destroyNodePair(InputParam inputParam, Solution solution) {
+        nodePair = generateNodePairRandom(inputParam.getN());
+        destroy(inputParam.getN(),solution, nodePair);
     }
 
     /**
      * Randomly choose requests to be removed
      * @return request set
      */
-    private List<Integer> generateNodePairRandom() {
-        int N = inputParam.getN();
+    private List<Integer> generateNodePairRandom(int N) {
         List<Integer> nodePair = new LinkedList<>();
         for (int k = 0; k < q; k++) {
             int rand = (int)(Math.random() * N) + 1;

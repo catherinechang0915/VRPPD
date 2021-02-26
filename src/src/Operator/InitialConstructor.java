@@ -9,16 +9,12 @@ import java.util.Set;
 
 public class InitialConstructor extends Constructor {
 
-    public InitialConstructor(InputParam inputParam) {
-        super(inputParam);
-    }
-
     /**
      * Construct initial feasible set of routes from input param, the algorithm is greedily add the node
      * with minimum objective increase
      */
     @Override
-    public void construct(Solution solution, List<Integer> nodePair) {
+    public void construct(InputParam inputParam, Solution solution, List<Integer> nodePair) {
         List<Route> routes = solution.getRoutes();
         double totalDistance = 0;
         double totalDelay = 0;
@@ -26,7 +22,7 @@ public class InitialConstructor extends Constructor {
 
         for (int routeCount = 0; routeCount < inputParam.getK(); routeCount++) {
             Route route = routes.get(routeCount);
-            initialRouteConstruction(route, nodePair);
+            initialRouteConstruction(inputParam, route, nodePair);
             totalDistance += route.getDist();
             totalDelay += route.getPenalty();
         }
@@ -40,7 +36,7 @@ public class InitialConstructor extends Constructor {
      * @param route route to be initialized
      * @param nodePair Set of remaining nodes to be selected from for construction
      */
-    private void initialRouteConstruction(Route route, List<Integer> nodePair) {
+    private void initialRouteConstruction(InputParam inputParam, Route route, List<Integer> nodePair) {
         double[][] distanceMatrix = inputParam.getDistanceMatrix();
         Node[] nodes = inputParam.getNodes();
 
@@ -60,7 +56,7 @@ public class InitialConstructor extends Constructor {
             for (int nodeIndex : nodePair) {
                 for (int pIndex = 1; pIndex < routeNodes.size(); pIndex++) {
                     for (int dIndex = pIndex; dIndex < routeNodes.size(); dIndex++) {
-                        InsertPosition pos = checkNodePairInsertion(route, nodeIndex, pIndex, dIndex);
+                        InsertPosition pos = checkNodePairInsertion(inputParam, route, nodeIndex, pIndex, dIndex);
                         if (pos == null) continue; // infeasible
                         double objectiveIncrease = inputParam.getAlpha() * pos.getDistIncrease()
                                 + inputParam.getBeta() * pos.getPenaltyIncrease();
@@ -72,7 +68,7 @@ public class InitialConstructor extends Constructor {
                 }
             }
             if (minInsertPosition == null) break; // no feasible position to insert on this route
-            nodeInsertion(minInsertPosition);
+            nodeInsertion(inputParam, minInsertPosition);
             nodePair.remove((Integer) minInsertPosition.getNodeIndex());
             dist += minInsertPosition.getDistIncrease();
             penalty += minInsertPosition.getPenaltyIncrease();

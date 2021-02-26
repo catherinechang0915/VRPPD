@@ -22,8 +22,9 @@ public class Main {
 
 
         if (mode == 0 && args.length != 6
-                || (mode == 1 || mode == 2) && args.length != 5
-                || mode == 3 && args.length != 7) {
+                || mode == 1 && args.length != 5
+                || mode == 2 && args.length != 6
+                || mode == 3 && args.length != 8) {
             exit("Incorrect number of arguments.");
         }
 
@@ -32,29 +33,33 @@ public class Main {
         if (mode == 4) {
             int type = -1;
             try {
-                type = Integer.parseInt(args[1]);
+                type = Integer.parseInt(args[2]);
             } catch (Exception e) {
                 exit("Wrong format of debug solver type.");
             }
 
             Solver debugSolver = null;
+            int noise = -1;
+            if (type == 2 || type == 3) {
+                noise = Integer.parseInt(args[3]);
+            }
             if (type == 3) {
                 int destructorType = -1, constructorType = -1;
                 try {
-                    destructorType = Integer.parseInt(args[3]);
-                    constructorType = Integer.parseInt(args[4]);
+                    destructorType = Integer.parseInt(args[4]);
+                    constructorType = Integer.parseInt(args[5]);
                 } catch (Exception e) {
                     exit("Wrong format of operator type.");
                 }
-                debugSolver = new MySolver(args[2], destructorType, constructorType);
+                debugSolver = new MySolver(destructorType, constructorType, noise);
             } else if (type == 2) {
-                // debugSolver = new ALNSSolver();
+                debugSolver = new ALNSSolver(noise);
             } else if (type == 1) {
-                debugSolver = new OPLSolver(args[2]);
+                debugSolver = new OPLSolver();
             } else {
                 exit("Wrong solver type.");
             }
-            debugSolver.solve("src" + Utils.separator() + "debug.txt");
+            debugSolver.solve(args[1], "src" + Utils.separator() + "debug.txt");
             return;
         }
 
@@ -66,7 +71,7 @@ public class Main {
         // Data Generator
         if (mode == 0) {
             int optimalVehicle = Integer.parseInt(args[5]);
-            DataGenerator gen = new DataGenerator(n, memberPercent, alpha, beta, optimalVehicle);
+            new DataGenerator(n, memberPercent, alpha, beta, optimalVehicle);
             System.out.println("Data generation finished.");
             return;
         }
@@ -74,9 +79,14 @@ public class Main {
         String optimalVehicleOn = mode == 1 ? "_optimalVehicle" : "";
         String sp = Utils.separator();
         String dataDir = "data" + sp + "pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + sp + alpha + "_" + beta + sp;
-        String resDirOPL = "res" + sp + "opl" + sp + "pdp_" + n + "_mem_" + memberPercent + sp + alpha + "_" + beta + sp;
-        String resDirHEU = "res" + sp + "heu" + sp + "pdp_" + n + "_mem_" + memberPercent + sp + alpha + "_" + beta + sp;
-        String resFile = "res" + sp + "pdp_" + n + "_mem_" + memberPercent + "_" + alpha + "_" + beta;
+        String resDir = null;
+        if (mode == 1) {
+            resDir = "res" + sp + "opl" + sp + "pdp_" + n + "_mem_" + memberPercent + sp + alpha + "_" + beta + sp;
+        } else if (mode == 2) {
+            resDir = "res" + sp + "alns" + sp + "pdp_" + n + "_mem_" + memberPercent + sp + alpha + "_" + beta + sp;
+        } else if (mode == 3) {
+            resDir = "res" + sp + "heu" + sp + "pdp_" + n + "_mem_" + memberPercent + sp + alpha + "_" + beta + sp;
+        }
 
         List<String> files = Utils.fileListNoExtension(dataDir);
         if (files.size() == 0) {
@@ -87,108 +97,119 @@ public class Main {
         Solution solution;
 
         if (mode == 1) {
-            generateAggregationFileHeader(resDirOPL + "aggregation.txt");
+            solver = new OPLSolver();
+            generateAggregationFileHeader(resDir + "aggregation.txt");
             for (String filename : files) {
-                solver = new OPLSolver(dataDir + filename + ".dat");
-                solver.solve(resDirOPL + filename + ".txt");
+                solver.solve(dataDir + filename + ".dat", resDir + filename + ".txt");
                 solution = solver.getSolverSolution();
                 int fail = solution == null ? 1 : 0;
-                generateAggregationFile(resDirOPL + "aggregation.txt", filename, solution.getVehicleNumber(),
-                        solver.getSolverObjective(), solution.getTotalDist(), solution.getTotalPenalty(),
+                generateAggregationFile(resDir + "aggregation.txt", filename, solution.getVehicleNumber(),
+                        solver.getSolverObjective(alpha, beta), solution.getTotalDist(), solution.getTotalPenalty(),
                         solution.getTimeElapsed(), fail);
             }
             return;
         }
 
         if (mode == 2) {
-
+            int noise = -1;
+            try {
+                noise = Integer.parseInt(args[5]);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                exit("Wrong noise flag.");
+            }
+            solver = new ALNSSolver(noise);
         }
 
-        // TODO: how many times to repeat for the same test cases, may change to arg
-        int iter = 3;
         if (mode == 3) {
-
-            double totalAvgVehicleGap = 0;
-            double totalAvgObjGap = 0;
-            Map<String, Integer> kMap = null;
-            Map<String, Double> objMap = null;
-
-            int destructorType = -1, constructorType = -1;
+            int destructorType = -1, constructorType = -1, noise = -1;
             try {
-                destructorType = Integer.parseInt(args[5]);
-                constructorType = Integer.parseInt(args[6]);
+                noise = Integer.parseInt(args[5]);
+                destructorType = Integer.parseInt(args[6]);
+                constructorType = Integer.parseInt(args[7]);
             } catch (Exception e) {
                 exit("Wrong format of operator type.");
             }
+            solver = new MySolver(destructorType, constructorType, noise);
+        }
+        runSolver(solver, files, dataDir, resDir, n, memberPercent, alpha, beta, 1);
+    }
 
-            String resAggregationFilename = resDirHEU + "aggregation_" + destructorType + "_"
-                    + constructorType + ".txt";
-            String resGapFilename = resDirHEU + "gap_" + destructorType + "_"
-                    + constructorType + ".txt";
+    private static void runSolver(Solver solver, List<String> files, String dataDir, String resDir, int n, double memberPercent, double alpha, double beta, int iteration) {
+                                          
+        String sp = Utils.separator();
+        String resAggregationFilename = resDir + sp + "aggregation_" + solver + ".txt";
+        String resGapFilename = resDir + "gap_" + solver + ".txt";  
 
-            int totalFail = 0;
-            long totalAvgTime = 0;
-            generateAggregationFileHeader(resAggregationFilename);
-            if (memberPercent == 1.0) {
-                kMap = Utils.getVehicleNumber("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
-                objMap = Utils.getOptimalObj("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
-                generateGapFileHeader(resGapFilename);
-            }
+        Solution solution = null;
+        double totalAvgVehicleGap = 0;
+        double totalAvgObjGap = 0;
+        Map<String, Integer> kMap = null;
+        Map<String, Double> objMap = null;
 
-            for (String filename : files) {
-                int fail = 0;
-                double avgVehicle = 0;
-                double avgObj = 0;
-                double avgDistance = 0;
-                double avgPenalty = 0;
-                long avgTime = 0;
-                for (int i = 0; i < iter; i++) {
-                    solver = new MySolver(dataDir + filename + ".dat", destructorType, constructorType);
-                    try {
-                        solver.solve(resDirHEU + filename + ".txt");
-                        solution = solver.getSolverSolution();
-                        avgVehicle += solution.getVehicleNumber();
-                        avgObj += solver.getSolverObjective();
-                        avgDistance += solution.getTotalDist();
-                        avgPenalty += solution.getTotalPenalty();
-                        avgTime += solution.getTimeElapsed();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        fail++;
-                    }
+        int totalFail = 0;
+        long totalAvgTime = 0;
+        Utils.writeToFile(solver.toString(), resAggregationFilename, false);
+        generateAggregationFileHeader(resAggregationFilename);
+        if (memberPercent == 1.0) {
+            kMap = Utils.getVehicleNumber("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
+            objMap = Utils.getOptimalObj("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
+            generateGapFileHeader(resGapFilename);
+        }
+
+        for (String filename : files) {
+            int fail = 0;
+            double avgVehicle = 0;
+            double avgObj = 0;
+            double avgDistance = 0;
+            double avgPenalty = 0;
+            long avgTime = 0;
+            for (int i = 0; i < iteration; i++) {
+                
+                try {
+                    solver.solve(dataDir + filename + ".dat", resDir + filename + ".txt");
+                    solution = solver.getSolverSolution();
+                    avgVehicle += solution.getVehicleNumber();
+                    avgObj += solver.getSolverObjective(alpha, beta);
+                    avgDistance += solution.getTotalDist();
+                    avgPenalty += solution.getTotalPenalty();
+                    avgTime += solution.getTimeElapsed();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    fail++;
                 }
-                avgVehicle = avgVehicle / iter;
-                avgObj = avgObj / iter;
-                avgDistance = avgDistance / iter;
-                avgPenalty = avgPenalty / iter;
-                avgTime = avgTime / iter;
-
-                totalAvgTime += avgTime;
-                totalFail += fail;
-
-                if (memberPercent == 1.0) {
-                    double vehicleNum = kMap.get(filename);
-                    double obj = objMap.get(filename);
-                    double vehicleGap = Math.abs(avgVehicle - vehicleNum) / vehicleNum;
-                    double objGap = Math.abs(avgObj - obj) / obj;
-                    totalAvgObjGap += vehicleGap;
-                    totalAvgObjGap += objGap;
-                    generateGapFile(resGapFilename, filename, vehicleGap, objGap);
-                }
-
-                generateAggregationFile(resAggregationFilename, filename, avgVehicle, avgObj,
-                        avgDistance, avgPenalty, avgTime, fail);
             }
-            Utils.writeToFile("Average Time: " + (totalAvgTime / files.size()),
-                    resAggregationFilename, true);
-            Utils.writeToFile("Fail percentage: " + (totalFail / (3 * files.size())),
-                    resAggregationFilename, true);
+            avgVehicle = avgVehicle / iteration;
+            avgObj = avgObj / iteration;
+            avgDistance = avgDistance / iteration;
+            avgPenalty = avgPenalty / iteration;
+            avgTime = avgTime / iteration;
+
+            totalAvgTime += avgTime;
+            totalFail += fail;
+
             if (memberPercent == 1.0) {
-                Utils.writeToFile("Average Vehicle Gap: " + (totalAvgVehicleGap / files.size()),
-                        resGapFilename, true);
-                Utils.writeToFile("Average Objective Gap: " + (totalAvgObjGap / files.size()),
-                        resGapFilename, true);
+                double vehicleNum = kMap.get(filename);
+                double obj = objMap.get(filename);
+                double vehicleGap = Math.abs(avgVehicle - vehicleNum) / vehicleNum;
+                double objGap = Math.abs(avgObj - obj) / obj;
+                totalAvgObjGap += vehicleGap;
+                totalAvgObjGap += objGap;
+                generateGapFile(resGapFilename, filename, vehicleGap, objGap);
             }
+
+            generateAggregationFile(resAggregationFilename, filename, avgVehicle, avgObj,
+                    avgDistance, avgPenalty, avgTime, fail);
+        }
+        Utils.writeToFile("Average Time: " + (totalAvgTime / files.size()),
+                resAggregationFilename, true);
+        Utils.writeToFile("Fail percentage: " + (totalFail / (3 * files.size())),
+                resAggregationFilename, true);
+        if (memberPercent == 1.0) {
+            Utils.writeToFile("Average Vehicle Gap: " + (totalAvgVehicleGap / files.size()),
+                    resGapFilename, true);
+            Utils.writeToFile("Average Objective Gap: " + (totalAvgObjGap / files.size()),
+                    resGapFilename, true);
         }
     }
 
@@ -197,12 +218,14 @@ public class Main {
                 + "For mode 0\n"
                 + "args: [mode] [n] [memberPercent] [alpha] [beta] [K]\n"
                 + "\tK: 0 using vehicle number in raw data text file\n\t : 1 using vehicle number in optimal solution\n\n"
-                + "For mode 1, 2\n"
+                + "For mode 1\n"
                 + "args: [mode] [n] [memberPercent] [alpha] [beta]\n\n"
+                + "For mode 2\n"
+                + "args: [mode] [n] [memberPercent] [alpha] [beta] [noise flag]\n\n"
                 + "For mode 3\n"
-                + "args: [mode] [n] [memberPercent] [alpha] [beta] [destructor type] [constructor type]\n\n"
+                + "args: [mode] [n] [memberPercent] [alpha] [beta] [noise flag] [destructor type] [constructor type]\n\n"
                 + "For mode 4\n"
-                + "args: [mode] [solver type] [.dat file path] ([destructor type] [constructor type])\n\n"
+                + "args: [mode] [.dat file path] [solver type] ([noise flag] [destructor type] [constructor type])\n\n"
                 + "Destructor Type: \n\t0: Random\n\t1: Worst\n\t2: Shaw\n"
                 + "Construcor Type: \n\t0: Regret-M\n\t1: Regret-1\n\t2: Regret-2\n\t3: Regret-3\n\t4: Regret-4";
 

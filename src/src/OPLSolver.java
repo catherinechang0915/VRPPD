@@ -8,7 +8,7 @@ import ilog.opl.*;
 import java.io.*;
 import java.util.*;
 
-public class OPLSolver implements Solver{
+public class OPLSolver extends Solver{
 
     private IloOplFactory oplF;
     private IloOplModel opl;
@@ -16,10 +16,9 @@ public class OPLSolver implements Solver{
 
     private InputParam inputParam;
     private OutputParam outputParam;
-    private Solution solution;
 
-    public OPLSolver (String dataFilePath) {
-        this("src" + Utils.separator() + ".mod", dataFilePath);
+    public OPLSolver () {
+        this("src" + Utils.separator() + "VRP.mod");
     }
 
     /**
@@ -27,8 +26,7 @@ public class OPLSolver implements Solver{
      * @param modelFilePath .mod file path
      * @param dataFilePath .dat file path
      */
-    public OPLSolver (String modelFilePath, String dataFilePath) {
-        this.inputParam = Utils.readParam(dataFilePath);;
+    public OPLSolver (String modelFilePath) {
         try {
             IloOplFactory.setDebugMode(true);
             oplF = new IloOplFactory();
@@ -39,8 +37,6 @@ public class OPLSolver implements Solver{
             cplex = oplF.createCplex();
             cplex.setOut(null);
             opl = oplF.createOplModel(def, cplex);
-            IloOplDataSource dataSource = oplF.createOplDataSource(dataFilePath);
-            opl.addDataSource(dataSource);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -52,7 +48,10 @@ public class OPLSolver implements Solver{
      * @param resFilePath output file path
      */
     @Override
-    public void solve(String resFilePath) {
+    public void solve(String dataFilePath, String resFilePath) {
+        this.inputParam = Utils.readParam(dataFilePath);
+        IloOplDataSource dataSource = oplF.createOplDataSource(dataFilePath);
+        opl.addDataSource(dataSource);
         int status = -1;
         try {
             long startTime = System.currentTimeMillis();
@@ -90,11 +89,6 @@ public class OPLSolver implements Solver{
     @Override
     public Solution getSolverSolution() {
         return solution;
-    }
-
-    @Override
-    public double getSolverObjective() {
-        return solution.getObjective(inputParam.getAlpha(), inputParam.getBeta());
     }
 
     /**

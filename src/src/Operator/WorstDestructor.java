@@ -1,5 +1,6 @@
 package src.Operator;
 
+import src.Utils;
 import src.DataStructures.*;
 
 import java.util.Comparator;
@@ -11,18 +12,18 @@ public class WorstDestructor extends Destructor {
 
     private final int p = 6;
 
-    public WorstDestructor(InputParam inputParam, double percentLo, double percentHi) {
-        super(inputParam, percentLo, percentHi);
+    public WorstDestructor(double percentLo, double percentHi) {
+        super(percentLo, percentHi);
     }
 
     /**
      * Remove requests that would result in maximum objective decrease, and update the solution
      * @param solution solution contains requests to be removed
      */
-    public void destroyNodePair(Solution solution) {
+    public void destroyNodePair(InputParam inputParam, Solution solution) {
         nodePair = new LinkedList<>();
         while (nodePair.size() < q) {
-            InsertPosition pos = findDestroyPosition(solution, inputParam.getN() - nodePair.size());
+            InsertPosition pos = findDestroyPosition(inputParam, solution, inputParam.getN() - nodePair.size());
             if (pos == null) {
                 throw new NullPointerException("Wrong code. Should always have feasible "
                         + "removal position in worst destroy operator");
@@ -41,7 +42,7 @@ public class WorstDestructor extends Destructor {
      * @param size determine the randomness
      * @return random choice among best size destroy position as InsertPosition object
      */
-    private InsertPosition findDestroyPosition(Solution solution, int remainSize) {
+    private InsertPosition findDestroyPosition(InputParam inputParam, Solution solution, int remainSize) {
         int rand = getRandomPos(p, remainSize);
         PriorityQueue<InsertPosition> pq = new PriorityQueue<>(Comparator.comparingDouble(
                 o -> - inputParam.getAlpha() * o.getDistIncrease() - inputParam.getBeta() * o.getPenaltyIncrease())); 
@@ -49,7 +50,7 @@ public class WorstDestructor extends Destructor {
                 // want bigger cost in increase (ele at bottom)
         for (Route route : solution.getRoutes()) {
             for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
-                InsertPosition pos = checkNodePairDestroy(route, pIndex);
+                InsertPosition pos = checkNodePairDestroy(inputParam, route, pIndex);
                 if (pos == null) continue; // delivery node, already checked
                 pq.add(pos);
                 if (pq.size() > rand + 1) {
@@ -69,7 +70,7 @@ public class WorstDestructor extends Destructor {
      * @param pIndex pickup node to be removed
      * @return dist increase and penalty increase
      */
-    private InsertPosition checkNodePairDestroy(Route route, int pIndex) {
+    private InsertPosition checkNodePairDestroy(InputParam inputParam, Route route, int pIndex) {
         List<Node> routeNodes = route.getNodes();
         int nodeIndex = routeNodes.get(pIndex).getIndex();
         if (nodeIndex > inputParam.getN()) return null;
@@ -155,7 +156,6 @@ public class WorstDestructor extends Destructor {
         int dIndex = pos.getdIndex();
 
         List<Node> routeNodes = route.getNodes();
-        double[][] distanceMatrix = inputParam.getDistanceMatrix();
 
         Node prevNode = routeNodes.get(pIndex - 1);
 
@@ -170,8 +170,7 @@ public class WorstDestructor extends Destructor {
             currNode = routeNodes.get(currIndex);
             load += currNode.getq();
             currNode.setQ(load);
-            time = Math.max(currNode.getTw1(), prevNode.gets() + time
-                    + distanceMatrix[prevNode.getIndex()][currNode.getIndex()]);
+            time = Math.max(currNode.getTw1(), prevNode.gets() + time + Utils.calculateDistance(prevNode, currNode));
             double delay = Math.max(time - currNode.getTw2(), 0);
             currNode.setDL(delay);
             currNode.setT(time);
