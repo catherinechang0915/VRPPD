@@ -51,7 +51,7 @@ public class MySolver extends Solver{
 
         InputParam inputParam = Utils.readParam(dataFilePath);
         double alpha = inputParam.getAlpha(), beta = inputParam.getBeta();
-        int MAX_ITER = 150;
+        int MAX_ITER = 25000;
 
         long startTime = System.currentTimeMillis();
         Solution sol = init(inputParam);
@@ -86,6 +86,7 @@ public class MySolver extends Solver{
                 sol = Utils.deserialize(prevSol);
             }
             T -= coolingRate;
+            //System.out.println(bestObj);
         }
         Solution bestToReturn = Utils.deserialize(bestSol);
         bestToReturn.setTimeElapsed(System.currentTimeMillis() - startTime);

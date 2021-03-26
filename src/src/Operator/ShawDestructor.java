@@ -39,11 +39,11 @@ public class ShawDestructor extends Destructor{
             int nodeNum = nodePair.get((int)(Math.random() * nodePair.size()));
             PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingDouble(
                     o ->  9 * (Utils.calculateDistance(nodes[o], nodes[nodeNum])
-                            + Utils.calculateDistance(nodes[o + N], nodes[nodeNum + N]))
+                            + Utils.calculateDistance(nodes[o + N], nodes[nodeNum + N])) / inputParam.getNormalizeFactorDis()
                             + 3 * (Math.abs(nodes[o].getT() - nodes[nodeNum].getT())
-                            + Math.abs(nodes[o + N].getT() - nodes[nodeNum + N].getT()))
-                            + 2 * Math.abs(nodes[o].getq() - nodes[nodeNum].getq())
-            )); // smaller is similiar -> top ele better
+                            + Math.abs(nodes[o + N].getT() - nodes[nodeNum + N].getT())) / inputParam.getNormalizeFactorTime()
+                            + 2 * Math.abs(nodes[o].getq() - nodes[nodeNum].getq()) / inputParam.getNormalizeFactorLoad()
+            )); // smaller is similar -> top ele better
             for (int i = 1; i <= N; i++) {
                 if (!nodePair.contains(i)) pq.add(i);
             }

@@ -1,7 +1,7 @@
 import os
 
 dic = {}
-f = open(os.getcwd() + '\\temp.txt', 'r')
+f = open(os.getcwd() + '\\shrink_window_percent.txt', 'r')
 while True:
     line = f.readline()
     if not line:

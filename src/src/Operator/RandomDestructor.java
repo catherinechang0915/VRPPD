@@ -39,7 +39,7 @@ public class RandomDestructor extends Destructor{
     /**
      * For debug use, generate nodePair with random seed
      */
-    private List<Integer> generateNodePairRandom(int q, int seed) {
+    private List<Integer> generateNodePairRandom(InputParam inputParam, int q, int seed) {
         Random generator = new Random(seed);
         int N = inputParam.getN();
         List<Integer> nodePair = new LinkedList<>();

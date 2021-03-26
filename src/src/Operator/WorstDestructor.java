@@ -39,15 +39,13 @@ public class WorstDestructor extends Destructor {
     /**
      * Find the best destroy place (maximum reduce for objective) for worst destroy construct operator
      * @param solution solution to be inserted
-     * @param size determine the randomness
      * @return random choice among best size destroy position as InsertPosition object
      */
     private InsertPosition findDestroyPosition(InputParam inputParam, Solution solution, int remainSize) {
         int rand = getRandomPos(p, remainSize);
         PriorityQueue<InsertPosition> pq = new PriorityQueue<>(Comparator.comparingDouble(
-                o -> - inputParam.getAlpha() * o.getDistIncrease() - inputParam.getBeta() * o.getPenaltyIncrease())); 
-                // negative increase, smaller absolute value on top
-                // want bigger cost in increase (ele at bottom)
+                o -> - inputParam.getAlpha() * o.getDistIncrease() - inputParam.getBeta() * o.getPenaltyIncrease()));
+                // smaller absolute cost on top
         for (Route route : solution.getRoutes()) {
             for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
                 InsertPosition pos = checkNodePairDestroy(inputParam, route, pIndex);

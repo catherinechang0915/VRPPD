@@ -45,18 +45,26 @@ public class RegretConstructor extends Constructor {
                     o -> inputParam.getAlpha() * o.getDistIncrease()
                             + inputParam.getBeta() * o.getPenaltyIncrease()));
             for (Route route : solution.getRoutes()) {
+                InsertPosition minPos = null;
                 for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
                     for (int dIndex = pIndex; dIndex < route.getNodes().size(); dIndex++) {
                         InsertPosition pos = checkNodePairInsertion(inputParam, route, nodeIndex, pIndex, dIndex);
                         if (pos == null) continue; // infeasible
-                        pq.add(pos);
+                        if (minPos == null ||
+                                pos.getDistIncrease() * inputParam.getAlpha()
+                                        + pos.getPenaltyIncrease() * inputParam.getBeta()
+                                        < minPos.getDistIncrease() * inputParam.getAlpha()
+                                        + minPos.getPenaltyIncrease() * inputParam.getBeta()) {
+                            minPos = pos;
+                        }
 //                        if (pq.size() > size) pq.poll();
                     }
                 }
+                if (minPos != null) pq.add(minPos);
             }
             int regretSize = size == -1 ? solution.getRoutes().size() : size;
             if (pq.size() >= regretSize) {
-                InsertPosition bestPos = pq.peek();
+                InsertPosition bestPos = pq.poll();
                 double bestRegretValue = bestPos.getDistIncrease() * inputParam.getAlpha()
                         + bestPos.getPenaltyIncrease() * inputParam.getBeta();
                 double regretValue = 0;
@@ -75,7 +83,7 @@ public class RegretConstructor extends Constructor {
             } else if (pq.size() != 0) {
                 double regretValue = 0;
                 regretValue += (regretSize - pq.size()) * 1000;
-                InsertPosition bestPos = pq.peek();
+                InsertPosition bestPos = pq.poll();
                 double bestRegretValue = bestPos.getDistIncrease() * inputParam.getAlpha()
                         + bestPos.getPenaltyIncrease() * inputParam.getBeta();
                 while (!pq.isEmpty()) {

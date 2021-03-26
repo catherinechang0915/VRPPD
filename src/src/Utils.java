@@ -71,8 +71,8 @@ public class Utils {
                 if (matcher.find()) {
                     String[] info = matcher.group(1).split(",");
                     nodes[i] = new Node(i, Integer.parseInt(info[0]),
-                            Integer.parseInt(info[1]),
-                            Integer.parseInt(info[2]),
+                            Double.parseDouble(info[1]),
+                            Double.parseDouble(info[2]),
                             Integer.parseInt(info[3]));
                 } else {
                     throw new IllegalArgumentException("Wrong node info.");
@@ -217,7 +217,7 @@ public class Utils {
          * @param filePath complete filepath for raw data
          * @return InputParam object modified from raw data
          */
-    public static InputParam readDataFromFile(int n, int K, double memberPercent, String filePath) {
+    public static InputParam readDataFromFile(int n, int K, double memberPercent, String filePath, double shrinkPercent) {
 
         List<Node> unsortedNodes = new LinkedList<>();
 
@@ -248,9 +248,11 @@ public class Utils {
             while ((line = bufferedReader.readLine()) != null) {
                 text = line.split("\\s+");
                 int index = Integer.parseInt(text[0]);
+                double tw1 = Double.parseDouble(text[4]);
+                double tw2 = Double.parseDouble(text[5]);
                 unsortedNodes.add(new Node(Integer.parseInt(text[3]),
-                        Integer.parseInt(text[4]),
-                        Integer.parseInt(text[5]),
+                        tw1 + shrinkPercent * (tw2 - tw1),
+                        tw2 - shrinkPercent * (tw2 - tw1),
                         Integer.parseInt(text[6]),
                         Integer.parseInt(text[1]),
                         Integer.parseInt(text[2])));

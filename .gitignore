@@ -1,1 +1,6 @@
+.idea/
+raw_data_originTW/
+raw_data/
 data/
+res/
+src/*.txt

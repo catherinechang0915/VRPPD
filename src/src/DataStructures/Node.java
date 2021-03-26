@@ -10,8 +10,8 @@ public class Node implements Serializable {
     // values for the input values (related to what in .dat file)
     private int index;
     private int q;
-    private int tw1;
-    private int tw2;
+    private double tw1;
+    private double tw2;
     private int s;
     private int x;
     private int y;
@@ -21,7 +21,7 @@ public class Node implements Serializable {
     private double T;
     private double DL;
 
-    public Node(int index, int q, int tw1, int tw2, int s, int x, int y, int membership, double Q, double T, double DL) {
+    public Node(int index, int q, double tw1, double tw2, int s, int x, int y, int membership, double Q, double T, double DL) {
         this.index = index;
         this.q = q;
         this.tw1 = tw1;
@@ -33,11 +33,11 @@ public class Node implements Serializable {
         this.Q = Q;
     }
 
-    public Node(int index, int q, int tw1, int tw2, int s) {
-        this(index, q, tw1, tw2, s, -1, -1, -1, 0, 0,0);
+    public Node(int index, int q, double tw1, double tw2, int s) {
+        this(index, q, tw1, tw2, s, -1, -1, -1, 0, 0, 0);
     }
 
-    public Node(int q, int tw1, int tw2, int s, int x, int y) {
+    public Node(int q, double tw1, double tw2, int s, int x, int y) {
         this(-1, q, tw1, tw2, s, x, y, -1, 0, 0, 0);
     }
 
@@ -67,11 +67,11 @@ public class Node implements Serializable {
         return q;
     }
 
-    public int getTw1() {
+    public double getTw1() {
         return tw1;
     }
 
-    public int getTw2() {
+    public double getTw2() {
         return tw2;
     }
 

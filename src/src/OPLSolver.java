@@ -24,7 +24,6 @@ public class OPLSolver extends Solver{
     /**
      * Set OPL solver with proper .mod and .dat file
      * @param modelFilePath .mod file path
-     * @param dataFilePath .dat file path
      */
     public OPLSolver (String modelFilePath) {
         try {

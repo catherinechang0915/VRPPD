@@ -132,4 +132,14 @@ public class Solution implements Serializable {
         Collections.sort(hashes);
         return hashes.hashCode();
     }
+
+    public int size() {
+        int count = 0;
+        for (Route r : sol) {
+            if (r.getNodes().size() != 2) {
+                count += r.getNodes().size() - 2;
+            }
+        }
+        return count + 2;
+    }
 }

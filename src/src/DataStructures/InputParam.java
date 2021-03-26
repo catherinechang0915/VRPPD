@@ -17,6 +17,9 @@ public class InputParam {
     // Objective Function Weights
     private double alpha;
     private double beta;
+    private double normalizeFactorLoad;
+    private double normalizeFactorDis;
+    private double normalizeFactorTime;
 
     public InputParam(int N, int K, Vehicle[] vehicles, Node[] nodes, double alpha, double beta) {
         this.N = N;
@@ -26,10 +29,20 @@ public class InputParam {
         this.distanceMatrix = calculateDistanceMatrix(nodes);
         this.alpha = alpha;
         this.beta = beta;
+        this.normalizeFactorLoad = getMaxLoad();
+        this.normalizeFactorTime = nodes[0].getTw2();
     }
 
     public InputParam(int N, int K, Vehicle[] vehicles, Node[] nodes) {
         this(N, K, vehicles, nodes, -1, -1);
+    }
+
+    private double getMaxLoad() {
+        double max = -1;
+        for (Node node : nodes) {
+            max = Math.max(max, node.getq());
+        }
+        return max;
     }
 
 //    private double[][] calculateDistMatrix(Node[] nodes) {
@@ -56,12 +69,15 @@ public class InputParam {
 //    }
 
     private double[][] calculateDistanceMatrix(Node[] nodes) {
+        double maxDis = -1;
         double[][] realDistanceMatrix = new double[nodes.length][nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             for (int j = 0; j < nodes.length; j++) {
                 realDistanceMatrix[i][j] = calculateDistance(nodes[i], nodes[j]);
+                maxDis = Math.max(maxDis, realDistanceMatrix[i][j]);
             }
         }
+        this.normalizeFactorDis = maxDis;
         return realDistanceMatrix;
     }
 
@@ -96,6 +112,18 @@ public class InputParam {
 
     public double getBeta() {
         return beta;
+    }
+
+    public double getNormalizeFactorDis() {
+        return normalizeFactorDis;
+    }
+
+    public double getNormalizeFactorLoad() {
+        return normalizeFactorLoad;
+    }
+
+    public double getNormalizeFactorTime() {
+        return normalizeFactorTime;
     }
 
     public void setAlpha(double alpha) {
