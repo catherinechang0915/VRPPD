@@ -1,5 +1,6 @@
 package src;
 
+import javafx.util.Pair;
 import src.DataStructures.*;
 import src.Operator.*;
 
@@ -54,7 +55,10 @@ public class MySolver extends Solver{
         int MAX_ITER = 25000;
 
         long startTime = System.currentTimeMillis();
-        Solution sol = init(inputParam);
+        Pair<Solution, List<Integer>> temp = init(inputParam);
+        Solution sol = temp.getKey();
+        List<Integer> nodeNotProcessed = temp.getValue();
+        if (nodeNotProcessed.size() != 0) throw new RuntimeException("No feasible initial solution");
 
         byte[] bestSol = Utils.serialize(sol);
         double bestObj = sol.getObjective(alpha, beta);

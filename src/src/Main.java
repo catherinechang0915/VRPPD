@@ -201,14 +201,14 @@ public class Main {
             generateAggregationFile(resAggregationFilename, filename, avgVehicle, avgObj,
                     avgDistance, avgPenalty, avgTime, fail);
         }
-        Utils.writeToFile("Average Time: " + (totalAvgTime / files.size()),
+        Utils.writeToFile("Average Time: " + (totalAvgTime / files.size()) + "\n",
                 resAggregationFilename, true);
-        Utils.writeToFile("Fail percentage: " + (totalFail / (3 * files.size())),
+        Utils.writeToFile("Fail percentage: " + (totalFail / (3 * files.size())) + "\n",
                 resAggregationFilename, true);
         if (memberPercent == 1.0) {
-            Utils.writeToFile("Average Vehicle Gap: " + (totalAvgVehicleGap / files.size()),
+            Utils.writeToFile("Average Vehicle Gap: " + (totalAvgVehicleGap / files.size()) + "\n",
                     resGapFilename, true);
-            Utils.writeToFile("Average Objective Gap: " + (totalAvgObjGap / files.size()),
+            Utils.writeToFile("Average Objective Gap: " + (totalAvgObjGap / files.size()) + "\n",
                     resGapFilename, true);
         }
     }
@@ -237,14 +237,14 @@ public class Main {
 
     private static void generateAggregationFileHeader(String filePath) {
         String header = String.format("%-15s%-15s%-15s%-15s%-15s%-15s%-15s\n", "Test Case", "Vehicle",
-                "Objective", "Distance", "Penalty", "Time", "Fail Num");
+                "Objective", "Distance", "Delay", "Time", "Fail Num");
         Utils.writeToFile(header, filePath, false);
     }
 
-    private static void generateAggregationFile(String filepath, String filename, double vehicle, double objective, double distance, double penalty, long time, int fail) {
+    private static void generateAggregationFile(String filepath, String filename, double vehicle, double objective, double distance, double delay, long time, int fail) {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%-15s",filename)).append(String.format("%-15f", vehicle)).append(String.format("%-15f", objective))
-                .append(String.format("%-15f", distance)).append(String.format("%-15f", penalty))
+                .append(String.format("%-15f", distance)).append(String.format("%-15f", delay))
                 .append(String.format("%-15f", (double) (time / 1000.0))).append(String.format("%-15d", fail)).append("\n");
         Utils.writeToFile(sb.toString(), filepath, true);
     }

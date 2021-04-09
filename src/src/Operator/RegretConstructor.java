@@ -1,5 +1,6 @@
 package src.Operator;
 
+import src.ALNSSolver;
 import src.Utils;
 import src.DataStructures.*;
 
@@ -114,13 +115,16 @@ public class RegretConstructor extends Constructor {
         while (true) {
             InsertPosition pos = findInsertPosition(inputParam, solution, nodePair);
             if (pos == null) {
-                throw new NullPointerException("No feasible insertion");
+                //System.out.println("Regret construct no feasible solution");
+                return;
             }
+//            ALNSSolver.validation(solution);
             nodeInsertion(inputParam, pos);
             pos.getRoute().setDist(pos.getRoute().getDist() + pos.getDistIncrease());
             pos.getRoute().setPenalty(pos.getRoute().getPenalty() + pos.getPenaltyIncrease());
             solution.setTotalDist(solution.getTotalDist() + pos.getDistIncrease());
             solution.setTotalPenalty(solution.getTotalPenalty() + pos.getPenaltyIncrease());
+//            ALNSSolver.validation(solution);
 
             nodePair.remove((Integer) pos.getNodeIndex());
             if (nodePair.size() == 0) break;

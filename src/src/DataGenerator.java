@@ -68,27 +68,28 @@ public class DataGenerator {
 
     public void generateFile(int n, int K, double memberPercent, double alpha, double beta,
                              String inputFileName, String outputFileName) {
-        InputParam inputParam = Utils.readDataFromFile(n, K, memberPercent, inputFileName, 0);
-        inputParam.setAlpha(alpha);
-        inputParam.setBeta(beta);
-        Utils.writeDataToFile(inputParam, outputFileName);
-//        double shrinkPercent = 0;
-//        double step = 0.001;
-//        while (true) {
-//            InputParam inputParam = Utils.readDataFromFile(n, K, memberPercent, inputFileName, shrinkPercent);
-//            inputParam.setAlpha(alpha);
-//            inputParam.setBeta(beta);
-//            Utils.writeDataToFile(inputParam, outputFileName);
-//            if (ALNSSolver.check(outputFileName)) {
-//                shrinkPercent += step;
-//            } else {
-//                inputParam = Utils.readDataFromFile(n, K, memberPercent, inputFileName, shrinkPercent - step);
-//                inputParam.setAlpha(alpha);
-//                inputParam.setBeta(beta);
-//                Utils.writeDataToFile(inputParam, outputFileName);
-//                System.out.println(outputFileName + " " + (shrinkPercent - step));
-//                break;
-//            }
-//        }
+//        InputParam inputParam = Utils.readDataFromFile(n, K, memberPercent, inputFileName, 0);
+//        inputParam.setAlpha(alpha);
+//        inputParam.setBeta(beta);
+//        Utils.writeDataToFile(inputParam, outputFileName);
+        double shrinkPercent = 0;
+        double step = 0.001;
+        while (true) {
+            //System.out.println(inputFileName);
+            InputParam inputParam = Utils.readDataFromFile(n, K, memberPercent, inputFileName, shrinkPercent);
+            inputParam.setAlpha(alpha);
+            inputParam.setBeta(beta);
+            Utils.writeDataToFile(inputParam, outputFileName);
+            if (ALNSSolver.check(outputFileName)) {
+                shrinkPercent += step;
+            } else {
+                inputParam = Utils.readDataFromFile(n, K, memberPercent, inputFileName, shrinkPercent - step);
+                inputParam.setAlpha(alpha);
+                inputParam.setBeta(beta);
+                Utils.writeDataToFile(inputParam, outputFileName);
+                System.out.println(outputFileName + " " + (shrinkPercent - step));
+                break;
+            }
+        }
     }
 }

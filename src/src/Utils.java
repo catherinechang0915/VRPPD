@@ -250,9 +250,16 @@ public class Utils {
                 int index = Integer.parseInt(text[0]);
                 double tw1 = Double.parseDouble(text[4]);
                 double tw2 = Double.parseDouble(text[5]);
+                if (index != 0) {
+                    tw1 += shrinkPercent * (tw2 - tw1);
+                    tw2 -= shrinkPercent * (tw2 - tw1);
+                } else {
+                    // tw1 += shrinkPercent * (tw2 - tw1) * 0.1;
+                    tw2 -= shrinkPercent * (tw2 - tw1) * 0.1;
+                }
                 unsortedNodes.add(new Node(Integer.parseInt(text[3]),
-                        tw1 + shrinkPercent * (tw2 - tw1),
-                        tw2 - shrinkPercent * (tw2 - tw1),
+                        tw1,
+                        tw2,
                         Integer.parseInt(text[6]),
                         Integer.parseInt(text[1]),
                         Integer.parseInt(text[2])));

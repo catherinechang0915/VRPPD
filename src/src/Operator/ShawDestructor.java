@@ -12,7 +12,7 @@ import java.util.PriorityQueue;
 
 public class ShawDestructor extends Destructor{
 
-    private final int p = 6;
+    protected final int p = 6;
 
     public ShawDestructor(double percentLo, double percentHi) {
         super(percentLo, percentHi);
@@ -20,7 +20,7 @@ public class ShawDestructor extends Destructor{
 
     @Override
     public void destroyNodePair(InputParam inputParam, Solution solution) {
-        nodePair = generateNodePairShaw(inputParam);
+        nodePair = generateNodePairShaw(inputParam, solution);
         destroy(inputParam.getN(),solution, nodePair);
     }
 
@@ -29,7 +29,7 @@ public class ShawDestructor extends Destructor{
      * each iteration, and found the closely related 3 requests, randomly add one to the request set
      * @return request set
      */
-    private List<Integer> generateNodePairShaw(InputParam inputParam) {
+    protected List<Integer> generateNodePairShaw(InputParam inputParam, Solution solution) {
         int N = inputParam.getN();
         Node[] nodes = inputParam.getNodes();
         List<Integer> nodePair = new LinkedList<>();
@@ -45,7 +45,7 @@ public class ShawDestructor extends Destructor{
                             + 2 * Math.abs(nodes[o].getq() - nodes[nodeNum].getq()) / inputParam.getNormalizeFactorLoad()
             )); // smaller is similar -> top ele better
             for (int i = 1; i <= N; i++) {
-                if (!nodePair.contains(i)) pq.add(i);
+                if (!nodePair.contains(i) && i != 0 && i != 2 * N + 1) pq.add(i);
             }
 
             for (int i = 0; i < getRandomPos(p, pq.size()); i++) {
@@ -59,7 +59,7 @@ public class ShawDestructor extends Destructor{
     /**
      * For debug use
      */
-    private List<Integer> generateNodePairShaw(int q, int rand, InputParam inputParam) {
+    protected List<Integer> generateNodePairShaw(int q, int rand, InputParam inputParam) {
         int N = inputParam.getN();
         Node[] nodes = inputParam.getNodes();
         List<Integer> nodePair = new LinkedList<>();

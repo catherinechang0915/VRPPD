@@ -3,6 +3,7 @@ package src.Operator;
 import src.Utils;
 import src.DataStructures.*;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -19,7 +20,6 @@ public class WorstDelayDestructor extends Destructor {
      * Remove requests that would result in maximum objective decrease, and update the solution
      * @param solution solution contains requests to be removed
      */
-    @Override
     public void destroyNodePair(InputParam inputParam, Solution solution) {
         nodePair = new LinkedList<>();
         while (nodePair.size() < q) {
@@ -39,16 +39,16 @@ public class WorstDelayDestructor extends Destructor {
     /**
      * Find the best destroy place (maximum reduce for objective) for worst destroy construct operator
      * @param solution solution to be inserted
-     * @param size determine the randomness
      * @return random choice among best size destroy position as InsertPosition object
      */
     private InsertPosition findDestroyPosition(InputParam inputParam, Solution solution, int remainSize) {
         int rand = getRandomPos(p, remainSize);
         PriorityQueue<InsertPosition> pq = new PriorityQueue<>((o1, o2) -> {
-                double d1 = o1.getPenaltyIncrease(), d2 = o2.getPenaltyIncrease();
-                if (d1 != d2) return Double.compare(d2, d1);
-                return Double.compare(o2.getDistIncrease(), o1.getDistIncrease());
-            });
+            double d1 = o1.getPenaltyIncrease(), d2 = o2.getPenaltyIncrease();
+            if (d1 != d2) return Double.compare(d2, d1);
+            return Double.compare(o2.getDistIncrease(), o1.getDistIncrease());
+        });
+        // smaller absolute cost on top
         for (Route route : solution.getRoutes()) {
             for (int pIndex = 1; pIndex < route.getNodes().size(); pIndex++) {
                 InsertPosition pos = checkNodePairDestroy(inputParam, route, pIndex);
@@ -122,7 +122,6 @@ public class WorstDelayDestructor extends Destructor {
         Node currNode = null;
 
         // initialization to be the value before the node to be inserted
-        double load = prevPNode.getQ();
         double time = prevPNode.getT();
 
         // calculate along iterating the nodes after, before insertion
@@ -184,6 +183,6 @@ public class WorstDelayDestructor extends Destructor {
 
     @Override
     public String toString() {
-        return "Worst Delay Destructor";
+        return "Worst Destructor";
     }
 }

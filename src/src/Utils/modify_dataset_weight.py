@@ -1,8 +1,9 @@
 import os
 
-mem = '0.3'
+mem = '0.7'
 new_weight = '5.0'
-folder_base = os.getcwd() + '\\data\\pdp_100_mem_' + mem + '\\'
+folder_root = os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd())))
+folder_base = folder_root + '\\data\\pdp_100_mem_' + mem + '\\'
 folder_in = folder_base + '1.0_1.0\\'
 folder_out = folder_base + new_weight + '_1.0\\'
 

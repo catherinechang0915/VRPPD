@@ -1,5 +1,6 @@
 package src;
 
+import javafx.util.Pair;
 import src.DataStructures.*;
 import src.Operator.*;
 
@@ -27,13 +28,44 @@ public class ALNSSolver extends Solver {
     private int[] constructorCounts;
     private Destructor[] destructors;
     private Constructor[] constructors;
-    private int destructorsNum = 3;
-    private int constructorsNum = 5;
+    private int destructorsNum;
+    private int constructorsNum;
 
     public ALNSSolver(int noise) {
         this.noise = noise;
         double percentLo = 0.2;
         double percentHi = 0.4;
+        destructors = new Destructor[] {
+                new RandomDestructor(percentLo, percentHi),
+                new WorstDestructor(percentLo, percentHi),
+                new ShawDestructor(percentLo, percentHi),
+                new ShawMemDestructor(percentLo, percentHi),
+                new WorstDelayDestructor(percentLo, percentHi)
+        };
+        if (noise == 0) {
+            constructors = new Constructor[] {
+                    new RegretConstructor(-1, 0),
+                    new RegretConstructor(1, 0),
+                    new RegretConstructor(2, 0),
+                    new RegretConstructor(3, 0),
+                    new RegretConstructor(4, 0)
+            };
+        } else {
+            constructors = new Constructor[] {
+                    new RegretConstructor(-1, 0),
+                    new RegretConstructor(1, 0),
+                    new RegretConstructor(2, 0),
+                    new RegretConstructor(3, 0),
+                    new RegretConstructor(4, 0),
+                    new RegretConstructor(-1, 1),
+                    new RegretConstructor(1, 1),
+                    new RegretConstructor(2, 1),
+                    new RegretConstructor(3, 1),
+                    new RegretConstructor(4, 1)
+            };
+        }
+        destructorsNum = destructors.length;
+        constructorsNum = constructors.length;
         if (noise == 1) constructorsNum *= 2;
         destructorWeights = new double[destructorsNum];
         constructorWeights = new double[constructorsNum];
@@ -47,34 +79,6 @@ public class ALNSSolver extends Solver {
         constructorScores = new double[constructorsNum];
         destructorCounts = new int[destructorsNum];
         constructorCounts = new int[constructorsNum];
-        destructors = new Destructor[] {
-                new RandomDestructor(percentLo, percentHi),
-                new ShawDestructor(percentLo, percentHi),
-                new WorstDestructor(percentLo, percentHi)
-                //new WorstDelayDestructor(percentLo, percentHi)
-        };
-        if (noise == 0) {
-            constructors = new Constructor[] {
-                new RegretConstructor(-1, 0),
-                new RegretConstructor(1, 0),
-                new RegretConstructor(2, 0),
-                new RegretConstructor(3, 0),
-                new RegretConstructor(4, 0)
-            };
-        } else {
-            constructors = new Constructor[] {
-                new RegretConstructor(-1, 0),
-                new RegretConstructor(1, 0),
-                new RegretConstructor(2, 0),
-                new RegretConstructor(3, 0),
-                new RegretConstructor(4, 0),
-                new RegretConstructor(-1, 1),
-                new RegretConstructor(1, 1),
-                new RegretConstructor(2, 1),
-                new RegretConstructor(3, 1),
-                new RegretConstructor(4, 1)
-            };
-        }
     }
 
 
@@ -89,7 +93,11 @@ public class ALNSSolver extends Solver {
         int segments = 100;
 
         long startTime = System.currentTimeMillis();
-        Solution sol = init(inputParam);
+        Pair<Solution, List<Integer>> temp = init(inputParam);
+        Solution sol = temp.getKey();
+        List<Integer> nodeNotProcessed = temp.getValue();
+        if (nodeNotProcessed.size() != 0) throw new RuntimeException("No feasible initial solution");
+        validation(sol);
 
         HashSet<Integer> acceptedSolution = new HashSet<>();
         acceptedSolution.add(sol.hashCode());
@@ -126,13 +134,27 @@ public class ALNSSolver extends Solver {
                 int destructorType = chooseDestructor();
                 destructor = destructors[destructorType];
                 nodePair = destructor.destroy(inputParam, sol);
-                //validation(sol);
+
+                System.out.println(i);
+                System.out.println(j);
+
+//                try {
+//                    validation(sol);
+//                } catch (Exception e) {
+//                    System.out.println(destructorType);
+//                    validation(sol);
+//                }
 
                 // Construct
                 int constructorType = chooseConstructor();
                 constructor = constructors[constructorType];
                 constructor.construct(inputParam, sol, nodePair);
-                //validation(sol);
+
+                if (nodePair.size() != 0) { // constructor does not find a feasible solution
+                    sol = Utils.deserialize(prevSol);
+                    continue;
+                }
+                validation(sol);
 
                 double currObj = sol.getObjective(alpha, beta);
                 if (currObj < bestObj) {
@@ -140,6 +162,10 @@ public class ALNSSolver extends Solver {
                     bestSol = Utils.serialize(sol);
                     destructorScores[destructorType] += sigma1;
                     constructorScores[constructorType] += sigma1;
+//                    destructorCounts[destructorType]++;
+//                    constructorCounts[constructorType]++;
+//                    acceptedSolution.add(sol.hashCode());
+//                    continue;
                 }
 
                 if (T < (currObj - bestObj) / bestObj) {
@@ -159,11 +185,10 @@ public class ALNSSolver extends Solver {
                             constructorScores[constructorType] += sigma3;
                         }
                     }
-
+                    destructorCounts[destructorType]++;
+                    constructorCounts[constructorType]++;
                     acceptedSolution.add(sol.hashCode());
                 }
-                destructorCounts[destructorType]++;
-                constructorCounts[constructorType]++;
 
 
                 T -= coolingRate;
@@ -241,19 +266,56 @@ public class ALNSSolver extends Solver {
         return -1;
     }
 
+    private boolean initForTW(InputParam inputParam) {
+//        List<Route> routes = new LinkedList<>();
+//        Vehicle[] vehicles = inputParam.getVehicles();
+//        for (int routeCount = 0; routeCount < inputParam.getK(); routeCount++) {
+//            routes.add(new Route(new LinkedList<>(), vehicles[routeCount]));
+//        }
+//        Solution solution = new Solution(routes, 0, 0);
+//
+//        Constructor initialConstructor = new InitialConstructor();
+//        // store the unprocessed request pairs
+//        List<Integer> nodePairNotProcessed = new LinkedList<>();
+//        for (int i = 1; i <= inputParam.getN(); i++) {
+//            nodePairNotProcessed.add(i);
+//        }
+        Pair<Solution, List<Integer>> temp = init(inputParam);
+        Solution solution = temp.getKey();
+        List<Integer> nodePairNotProcessed = temp.getValue();
+        // initialConstructor.construct(inputParam, solution, nodePairNotProcessed);
+        if (nodePairNotProcessed.size() == 0) return true;
+        Destructor destructor = new RandomDestructor(0.15, 0.4);
+        Constructor constructor = new RegretConstructor(1, 0);
+        for (int i = 0; i < 10; i++) {
+            List<Integer> nodePairTemp = destructor.destroy(inputParam, solution);
+            validation(solution);
+            for (int node : nodePairNotProcessed) {
+                if (nodePairTemp.contains(node)) continue;
+                nodePairTemp.add(node);
+            }
+            constructor.construct(inputParam, solution, nodePairTemp);
+            if (nodePairTemp.size() == 0) {
+                // System.out.println(i);
+                return true;
+            }
+            nodePairNotProcessed = nodePairTemp;
+        }
+        return false;
+    }
+
     public boolean check(String dataFilePath) {
         InputParam inputParam = Utils.readParam(dataFilePath);
-        Solution sol = init(inputParam);
-        if (sol.size() != inputParam.getNodes().length) return false;
-        return true;
+        return initForTW(inputParam);
     }
 
     /**
      * For debug use, recalculate and compare the information along the route
      * @param sol Solution to be verified
      */
-    private void validation(Solution sol) {
+    public static void validation(Solution sol) {
         List<Route> routes = sol.getRoutes();
+        if (routes.size() != 25) throw new RuntimeException("Wrong number of routes.");
         double totalDist = 0;
         double totalPenalty = 0;
         for (Route route : routes) {
@@ -266,24 +328,24 @@ public class ALNSSolver extends Solver {
                 Node prevNode = routeNodes.get(i - 1);
                 Node node = routeNodes.get(i);
                 load += node.getq();
-                if (!Utils.doubleEqual(node.getQ(), load)) throw new IllegalArgumentException("Wrong with load.");
-                if (load < 0 || load > route.getVehicle().getCapacity()) throw new IllegalArgumentException("Load Violation.");
+                if (!Utils.doubleEqual(node.getQ(), load)) throw new RuntimeException("Wrong with load.");
+                if (load < 0 || load > route.getVehicle().getCapacity()) throw new RuntimeException("Load Violation.");
                 time = Math.max(node.getTw1(), prevNode.gets() + time + Utils.calculateDistance(prevNode, node));
-                if (node.getMembership() == 1 && time > node.getTw2()) throw new IllegalArgumentException("Time window violation.");
-                if (!Utils.doubleEqual(time, node.getT())) throw new IllegalArgumentException("Wrong with time.");
+                if (node.getMembership() == 1 && time > node.getTw2()) throw new RuntimeException("Time window violation.");
+                if (!Utils.doubleEqual(time, node.getT())) throw new RuntimeException("Wrong with time.");
                 double tempPenalty = Math.max(0, time - node.getTw2());
-                if (!Utils.doubleEqual(tempPenalty, node.getDL())) throw new IllegalArgumentException("Wrong penalty");
+                if (!Utils.doubleEqual(tempPenalty, node.getDL())) throw new RuntimeException("Wrong penalty");
                 penalty += tempPenalty;
                 dist += Utils.calculateDistance(prevNode, node);
             }
-            if (!Utils.doubleEqual(dist, route.getDist())) throw new IllegalArgumentException("Wrong route distance");
+            if (!Utils.doubleEqual(dist, route.getDist())) throw new RuntimeException("Wrong route distance");
 //            System.out.println(penalty + " " + route.getPenalty());
-            if (!Utils.doubleEqual(penalty, route.getPenalty())) throw new IllegalArgumentException("Wrong route penalty");
+            if (!Utils.doubleEqual(penalty, route.getPenalty())) throw new RuntimeException("Wrong route penalty");
             totalDist += dist;
             totalPenalty += penalty;
         }
-        if (!Utils.doubleEqual(totalDist, sol.getTotalDist())) throw new IllegalArgumentException("Wrong solution distance");
-        if (!Utils.doubleEqual(totalPenalty, sol.getTotalPenalty())) throw new IllegalArgumentException("Wrong solution penalty");
+        if (!Utils.doubleEqual(totalDist, sol.getTotalDist())) throw new RuntimeException("Wrong solution distance");
+        if (!Utils.doubleEqual(totalPenalty, sol.getTotalPenalty())) throw new RuntimeException("Wrong solution penalty");
     }
 
     private void writeToFile(String filePath) {
