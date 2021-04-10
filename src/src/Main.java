@@ -53,7 +53,7 @@ public class Main {
                 }
                 debugSolver = new MySolver(destructorType, constructorType, noise);
             } else if (type == 2) {
-                debugSolver = new ALNSSolver(noise);
+                debugSolver = new ALNSSolver(noise, 0.025);
             } else if (type == 1) {
                 debugSolver = new OPLSolver();
             } else {
@@ -98,12 +98,12 @@ public class Main {
 
         if (mode == 1) {
             solver = new OPLSolver();
-            generateAggregationFileHeader(resDir + "aggregation.txt");
+            Utils.generateAggregationFileHeader(resDir + "aggregation.txt");
             for (String filename : files) {
                 solver.solve(dataDir + filename + ".dat", resDir + filename + ".txt");
                 solution = solver.getSolverSolution();
                 int fail = solution == null ? 1 : 0;
-                generateAggregationFile(resDir + "aggregation.txt", filename, solution.getVehicleNumber(),
+                Utils.generateAggregationFile(resDir + "aggregation.txt", filename, solution.getVehicleNumber(),
                         solver.getSolverObjective(alpha, beta), solution.getTotalDist(), solution.getTotalPenalty(),
                         solution.getTimeElapsed(), fail);
             }
@@ -132,7 +132,8 @@ public class Main {
             }
             solver = new MySolver(destructorType, constructorType, noise);
         }
-        runSolver(solver, files, dataDir, resDir, n, memberPercent, alpha, beta, 1);
+        int iteration = 3;
+        runSolver(solver, files, dataDir, resDir, n, memberPercent, alpha, beta, iteration);
     }
 
     private static void runSolver(Solver solver, List<String> files, String dataDir, String resDir, int n, double memberPercent, double alpha, double beta, int iteration) {
@@ -141,21 +142,21 @@ public class Main {
         String resAggregationFilename = resDir + sp + "aggregation_" + solver + ".txt";
         String resGapFilename = resDir + "gap_" + solver + ".txt";  
 
-        Solution solution = null;
         double totalAvgVehicleGap = 0;
         double totalAvgObjGap = 0;
-        Map<String, Integer> kMap = null;
-        Map<String, Double> objMap = null;
+        Solution solution = null;
+//        Map<String, Integer> kMap = null;
+//        Map<String, Double> objMap = null;
 
         int totalFail = 0;
         long totalAvgTime = 0;
         Utils.writeToFile(solver.toString(), resAggregationFilename, false);
-        generateAggregationFileHeader(resAggregationFilename);
-        if (memberPercent == 1.0) {
-            kMap = Utils.getVehicleNumber("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
-            objMap = Utils.getOptimalObj("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
-            generateGapFileHeader(resGapFilename);
-        }
+        Utils.generateAggregationFileHeader(resAggregationFilename);
+//        if (memberPercent == 1.0) {
+//            kMap = Utils.getVehicleNumber("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
+//            objMap = Utils.getOptimalObj("raw_data" + sp + "pdp_" + n + sp + "optimal.txt");
+//            generateGapFileHeader(resGapFilename);
+//        }
 
         for (String filename : files) {
             int fail = 0;
@@ -188,20 +189,20 @@ public class Main {
             totalAvgTime += avgTime;
             totalFail += fail;
 
-            if (memberPercent == 1.0) {
-                double vehicleNum = kMap.get(filename);
-                double obj = objMap.get(filename);
-                double vehicleGap = Math.abs(avgVehicle - vehicleNum) / vehicleNum;
-                double objGap = Math.abs(avgObj - obj) / obj;
-                totalAvgObjGap += vehicleGap;
-                totalAvgObjGap += objGap;
-                generateGapFile(resGapFilename, filename, vehicleGap, objGap);
-            }
+//            if (memberPercent == 1.0) {
+//                double vehicleNum = kMap.get(filename);
+//                double obj = objMap.get(filename);
+//                double vehicleGap = Math.abs(avgVehicle - vehicleNum) / vehicleNum;
+//                double objGap = Math.abs(avgObj - obj) / obj;
+//                totalAvgObjGap += vehicleGap;
+//                totalAvgObjGap += objGap;
+//                generateGapFile(resGapFilename, filename, vehicleGap, objGap);
+//            }
 
-            generateAggregationFile(resAggregationFilename, filename, avgVehicle, avgObj,
+            Utils.generateAggregationFile(resAggregationFilename, filename, avgVehicle, avgObj,
                     avgDistance, avgPenalty, avgTime, fail);
         }
-        Utils.writeToFile("Average Time: " + (totalAvgTime / files.size()) + "\n",
+        Utils.writeToFile("Average Time: " + (totalAvgTime / 1000.0 / files.size()) + "\n",
                 resAggregationFilename, true);
         Utils.writeToFile("Fail percentage: " + (totalFail / (3 * files.size())) + "\n",
                 resAggregationFilename, true);
@@ -226,39 +227,13 @@ public class Main {
                 + "args: [mode] [n] [memberPercent] [alpha] [beta] [noise flag] [destructor type] [constructor type]\n\n"
                 + "For mode 4\n"
                 + "args: [mode] [.dat file path] [solver type] ([noise flag] [destructor type] [constructor type])\n\n"
-                + "Destructor Type: \n\t0: Random\n\t1: Worst\n\t2: Shaw\n"
-                + "Construcor Type: \n\t0: Regret-M\n\t1: Regret-1\n\t2: Regret-2\n\t3: Regret-3\n\t4: Regret-4";
+                + "Destructor Type: \n\t0: Random\n\t1: Worst\n\t2: Shaw\n\t3:Shaw with Priority"
+                + "Constructor Type: \n\t0: Regret-M\n\t1: Regret-1\n\t2: Regret-2\n\t3: Regret-3\n\t4: Regret-4";
 
         System.out.println(msg);
         System.out.println("Please follow the instruction below.\n");
         System.out.println(instruction);
         System.exit(1);
-    }
-
-    private static void generateAggregationFileHeader(String filePath) {
-        String header = String.format("%-15s%-15s%-15s%-15s%-15s%-15s%-15s\n", "Test Case", "Vehicle",
-                "Objective", "Distance", "Delay", "Time", "Fail Num");
-        Utils.writeToFile(header, filePath, false);
-    }
-
-    private static void generateAggregationFile(String filepath, String filename, double vehicle, double objective, double distance, double delay, long time, int fail) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-15s",filename)).append(String.format("%-15f", vehicle)).append(String.format("%-15f", objective))
-                .append(String.format("%-15f", distance)).append(String.format("%-15f", delay))
-                .append(String.format("%-15f", (double) (time / 1000.0))).append(String.format("%-15d", fail)).append("\n");
-        Utils.writeToFile(sb.toString(), filepath, true);
-    }
-
-    private static void generateGapFileHeader(String filePath) {
-        String header = String.format("%-15s%-15s%-15s\n", "Test Case", "Vehicle", "Objective");
-        Utils.writeToFile(header, filePath, false);
-    }
-
-    private static void generateGapFile(String filepath, String filename, double vehicle, double objective) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-15s",filename)).append(String.format("%-15f", vehicle))
-                .append(String.format("%-15f", objective)).append("\n");
-        Utils.writeToFile(sb.toString(), filepath, true);
     }
 
 }

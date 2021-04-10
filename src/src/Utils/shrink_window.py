@@ -1,3 +1,4 @@
+# do not use this, has resolution problem, use modify_dataset_weight to copy TW from pdp_100_mem_1.0\\1.0_1.0
 import os
 
 dic = {}
@@ -26,16 +27,19 @@ for data_file in files:
     node_info = line.split()
     tw_width = float(node_info[5]) - float(node_info[4])
     # node_info[4] = '{0:.5f}'.format(float(node_info[4]) + shrinkPercent * tw_width * 0.1)
-    node_info[4] = '{0:.5f}'.format(float(node_info[4]))
-    node_info[5] = '{0:.5f}'.format(float(node_info[5]) - shrinkPercent * tw_width * 0.1)
+    # node_info[4] = '{0:.14f}'.format(float(node_info[4]))
+    # node_info[5] = '{0:.14f}'.format(float(node_info[5]) - shrinkPercent * tw_width * 0.1)
+    node_info[5] = str(float(node_info[5]) - shrinkPercent * tw_width * 0.1)
     node_info.append('\n')
     lines_mod.append('\t'.join(node_info))
 
     for line in lines[2:]:
         node_info = line.split()
         tw_width = float(node_info[5]) - float(node_info[4])
-        node_info[4] = '{0:.5f}'.format(float(node_info[4]) + shrinkPercent * tw_width)
-        node_info[5] = '{0:.5f}'.format(float(node_info[5]) - shrinkPercent * tw_width)
+        node_info[4] = str(float(node_info[4]) + shrinkPercent * tw_width)
+        node_info[5] = str(float(node_info[5]) - shrinkPercent * tw_width)
+        # node_info[4] = '{0:.14f}'.format(float(node_info[4]) + shrinkPercent * tw_width)
+        # node_info[5] = '{0:.14f}'.format(float(node_info[5]) - shrinkPercent * tw_width)
         node_info.append('\n')
         lines_mod.append('\t'.join(node_info))
     f_write.writelines(lines_mod)

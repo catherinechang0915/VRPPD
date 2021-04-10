@@ -19,4 +19,15 @@ public class Vehicle implements Serializable {
     public int getCapacity() {
         return capacity;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof Vehicle)) return false;
+
+        Vehicle vehicle = (Vehicle) other;
+        return this.k == vehicle.getK();
+    }
 }

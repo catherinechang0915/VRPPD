@@ -83,4 +83,16 @@ public class Route implements Serializable {
     public int hashCode() {
         return route.hashCode();
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof Route)) return false;
+
+        Route route = (Route) other;
+        if (!this.vehicle.equals(route.getVehicle())) return false;
+        return this.route.equals(route.getNodes());
+    }
 }

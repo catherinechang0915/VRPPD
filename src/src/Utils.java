@@ -552,6 +552,35 @@ public class Utils {
         return object;
     }
 
+    public static void generateAggregationFileHeader(String filePath) {
+        String header = String.format("%-15s%-15s%-15s%-15s%-15s%-15s%-15s\n", "Test Case", "Vehicle",
+                "Objective", "Distance", "Delay", "Time", "Fail Num");
+        Utils.writeToFile(header, filePath, false);
+    }
+
+    /**
+     * Formulate an entry for result display
+     */
+    public static void generateAggregationFile(String filepath, String filename, double vehicle, double objective, double distance, double delay, long time, int fail) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%-15s",filename)).append(String.format("%-15f", vehicle)).append(String.format("%-15f", objective))
+                .append(String.format("%-15f", distance)).append(String.format("%-15f", delay))
+                .append(String.format("%-15f", (double) (time / 1000.0))).append(String.format("%-15d", fail)).append("\n");
+        Utils.writeToFile(sb.toString(), filepath, true);
+    }
+
+    public static void generateGapFileHeader(String filePath) {
+        String header = String.format("%-15s%-15s%-15s\n", "Test Case", "Vehicle", "Objective");
+        Utils.writeToFile(header, filePath, false);
+    }
+
+    public static void generateGapFile(String filepath, String filename, double vehicle, double objective) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%-15s",filename)).append(String.format("%-15f", vehicle))
+                .append(String.format("%-15f", objective)).append("\n");
+        Utils.writeToFile(sb.toString(), filepath, true);
+    }
+
     /**
      * Calculate the euclidean distance between two nodes using their (x, y) coordinates
      * @param n1 node1
@@ -583,8 +612,16 @@ public class Utils {
         return Math.abs(n1 - n2) < Math.pow(10, -5);
     }
 
+    /**
+     * @return system dependent separator
+     */
     public static String separator() {
         return File.separator;
+    }
+
+    /** create unique identifier for file suffix **/
+    public static String createSalt() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 
 }

@@ -139,4 +139,13 @@ public class Node implements Serializable {
     public int hashCode() {
         return ((Integer) index).hashCode();
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof Node)) {
+            return false;
+        }
+        return this.getIndex() == ((Node) other).getIndex();
+    }
 }

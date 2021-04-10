@@ -40,4 +40,15 @@ public class InsertPosition {
     public Route getRoute() {
         return route;
     }
+
+//    @Override
+//    public boolean equals(Object other) {
+//        if (this == other) {
+//            return true;
+//        }
+//        if (!(other instanceof InsertPosition)) return false;
+//
+//        InsertPosition pos = (InsertPosition) other;
+//        return this.route.equals(pos.getRoute());
+//    }
 }
