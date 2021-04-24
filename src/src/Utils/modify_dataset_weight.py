@@ -2,11 +2,11 @@ import os
 import random
 
 
-def main(mem, new_weights_lst, is_first):
+def main(n, mem, new_weights_lst, is_first):
     folder_root = os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd())))
-    folder_base = folder_root + '\\data\\pdp_100_mem_' + str(mem) + '\\'
+    folder_base = folder_root + '\\data\\pdp_' + str(n) + '_mem_' + str(mem) + '\\'
     if is_first:
-        folder_in = folder_root + '\\data\\pdp_100_mem_1.0\\1.0_1.0\\'
+        folder_in = folder_root + '\\data\\pdp_' + str(n) + '_mem_1.0\\1.0_1.0\\'
     else:
         folder_in = folder_base + '1.0_1.0\\'
 
@@ -40,7 +40,6 @@ def main(mem, new_weights_lst, is_first):
             lines = f_read.readlines()
 
             if not is_membership_calculated:
-                is_membership_calculated = True
                 # randomly generate membership data
                 n = len(lines[-3].split(','))
                 N = int((n - 2) / 2)
@@ -59,8 +58,13 @@ def main(mem, new_weights_lst, is_first):
             f_write.writelines(lines)
             f_read.close()
             f_write.close()
+        
+        if not is_membership_calculated:
+            is_membership_calculated = True
 
 if __name__ == '__main__':
-    mem = 0.7
-    new_weights_lst = [[1.0, 1.0], [1.0, 3.0], [3.0, 1.0], [5.0, 1.0]] # place [1.0, 1.0] at first position
-    main(mem, new_weights_lst, False)
+    for size in [100, 200]:
+        for mem in [0.3, 0.5, 0.7]:
+            main(size, mem, [[1.0, 1.0]], True)
+            new_weights_lst = [[1.0, 1.0], [1.0, 3.0], [3.0, 1.0], [5.0, 1.0]] # place [1.0, 1.0] at first position
+            main(size, mem, new_weights_lst, False)
