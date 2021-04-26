@@ -1,0 +1,19 @@
+Test Case      Vehicle        Objective      Distance       Delay          Time           Fail Num       
+lr110                       
+min            1402.427458   
+gap            0.000000      
+lr111                       
+min            1304.919804   
+gap            0.000205      
+LR1_2_2                     
+min            4261.756804   
+gap            0.000196      
+LR1_2_7                     
+min            3215.235572   
+gap            0.005313      
+lr202                       
+min            1389.376469   
+gap            0.003834      
+lr203                       
+min            1140.543174   
+gap            0.007425      
