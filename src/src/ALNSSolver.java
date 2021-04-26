@@ -48,20 +48,21 @@ public class ALNSSolver extends Solver {
         this.noise = noise;
         double percentLo = 0.2;
         double percentHi = 0.4;
-        this.TStart = TStart == -1 ? 0.025 : TStart;
+        this.TStart = TStart == -1 ? 0.02 : TStart;
+        System.out.println("Temperature " + this.TStart);
         if (eta1 == -1 || eta2 == -1 || eta3 == -1 || eta4 == -1) {
             destructors = new Destructor[] {
                 new RandomDestructor(percentLo, percentHi),
                 new WorstDestructor(percentLo, percentHi),
-                    new ShawDestructor(percentLo, percentHi),
-//                new ShawMemDestructor(percentLo, percentHi)
+//                    new ShawDestructor(percentLo, percentHi),
+                new ShawMemDestructor(percentLo, percentHi)
             };
         } else{
             destructors = new Destructor[] {
                 new RandomDestructor(percentLo, percentHi),
                 new WorstDestructor(percentLo, percentHi),
-                    new ShawDestructor(percentLo, percentHi),
-//                new ShawMemDestructor(percentLo, percentHi, eta1, eta2, eta3, eta4)
+//                    new ShawDestructor(percentLo, percentHi),
+                new ShawMemDestructor(percentLo, percentHi, eta1, eta2, eta3, eta4)
             };
         }
 
@@ -89,7 +90,6 @@ public class ALNSSolver extends Solver {
         }
         destructorsNum = destructors.length;
         constructorsNum = constructors.length;
-        if (noise == 1) constructorsNum *= 2;
         destructorWeights = new double[destructorsNum];
         constructorWeights = new double[constructorsNum];
         destructorNormalizedWeights = new double[destructorsNum];
@@ -112,7 +112,7 @@ public class ALNSSolver extends Solver {
 
         InputParam inputParam = Utils.readParam(dataFilePath);
         double alpha = inputParam.getAlpha(), beta = inputParam.getBeta();
-        int MAX_ITER = 25000;
+        int MAX_ITER = 50000;
         int segments = 100;
 
         long startTime = System.currentTimeMillis();
@@ -129,6 +129,8 @@ public class ALNSSolver extends Solver {
         double bestObj = sol.getObjective(alpha, beta);
 
         double T = this.TStart;
+        T = 0.04;
+        MAX_ITER = 50000;
         double coolingRate = T / MAX_ITER;
 
         boolean isWriteWeight = false, isWriteObjective = true;
@@ -138,7 +140,8 @@ public class ALNSSolver extends Solver {
         Constructor constructor = null;
 
         StringBuilder sb1 = new StringBuilder(), sb2 = new StringBuilder();
-        StringBuilder bestObjectives = new StringBuilder(), currObjectives = new StringBuilder();
+        StringBuilder bestObjectives = new StringBuilder(), currObjectives = new StringBuilder(),
+                acceptedIteration = new StringBuilder();
 
         double prevObj = -1;
         byte[] prevSol = null;
@@ -171,6 +174,7 @@ public class ALNSSolver extends Solver {
 //                validation(sol);
 
                 double currObj = sol.getObjective(alpha, beta);
+
                 if (currObj < bestObj) {
                     bestObj = currObj;
                     bestSol = Utils.serialize(sol);
@@ -179,6 +183,11 @@ public class ALNSSolver extends Solver {
                     destructorCounts[destructorType]++;
                     constructorCounts[constructorType]++;
                     acceptedSolution.add(sol.hashCode());
+//                    if (isWriteObjective) {
+//                        bestObjectives.append(bestObj).append("\n");
+//                        currObjectives.append(currObj).append("\n");
+//                        acceptedIteration.append(i * segments + j).append("\n");
+//                    }
                     continue;
                 }
 
@@ -196,19 +205,23 @@ public class ALNSSolver extends Solver {
                             constructorScores[constructorType] += sigma3;
                         }
                     }
-                    destructorCounts[destructorType]++;
-                    constructorCounts[constructorType]++;
                     acceptedSolution.add(sol.hashCode());
+//                    if (isWriteObjective) {
+//                        bestObjectives.append(bestObj).append("\n");
+//                        currObjectives.append(currObj).append("\n");
+//                        acceptedIteration.append(i * segments + j).append("\n");
+//                    }
                 } else {
                     // not accept if worse than global and not meeting criteria, rollback
                     sol = Utils.deserialize(prevSol);
+//                    if (isWriteObjective) {
+//                        bestObjectives.append(bestObj).append("\n");
+//                        currObjectives.append(prevObj).append("\n");
+//                    }
                 }
                 T -= coolingRate;
-
-                if (isWriteObjective) {
-                    bestObjectives.append(bestObj).append("\n");
-                    currObjectives.append(currObj).append("\n");
-                }
+                destructorCounts[destructorType]++;
+                constructorCounts[constructorType]++;
             }
             // update weights
             updateweights(destructorWeights, destructorScores, destructorCounts);
@@ -216,34 +229,36 @@ public class ALNSSolver extends Solver {
             normalizeWeights(destructorWeights, destructorNormalizedWeights);
             normalizeWeights(constructorWeights, constructorNormalizedWeights);
 
-            if (isWriteWeight) {
-                for (int k = 0; k < destructorNormalizedWeights.length; k++) {
-                    sb1.append(destructorWeights[k]).append(" ");
-                }
-                sb1.append("\n");
-                for (int k = 0; k < constructorNormalizedWeights.length; k++) {
-                    sb2.append(constructorWeights[k]).append(" ");
-                }
-                sb2.append("\n");
-            }
+//            if (isWriteWeight) {
+//                for (int k = 0; k < destructorNormalizedWeights.length; k++) {
+//                    sb1.append(destructorWeights[k]).append(" ");
+//                }
+//                sb1.append("\n");
+//                for (int k = 0; k < constructorNormalizedWeights.length; k++) {
+//                    sb2.append(constructorWeights[k]).append(" ");
+//                }
+//                sb2.append("\n");
+//            }
         }
         Solution bestToReturn = Utils.deserialize(bestSol);
         bestToReturn.setTimeElapsed(System.currentTimeMillis() - startTime);
         solution = bestToReturn;
         String salt = Utils.createSalt();
-        writeToFile(resFilePath.replaceAll(".txt", "") + "_" + salt + ".txt");
-        if (isWriteWeight) {
-            Utils.writeToFile(sb1.toString(), resFilePath.replaceAll(".txt", "")
-                    + "_" + salt + "_destructor_origin_weights.txt", false);
-            Utils.writeToFile(sb2.toString(), resFilePath.replaceAll(".txt", "")
-                    + "_" + salt + "_constructor_origin_weights.txt", false);
-        }
-        if (isWriteObjective) {
-            Utils.writeToFile(bestObjectives.toString(), resFilePath.replaceAll(".txt", "")
-                    + "_" + salt + "_best_objectives.txt", false);
-            Utils.writeToFile(currObjectives.toString(), resFilePath.replaceAll(".txt", "")
-                    + "_" + salt + "_curr_objectives.txt", false);
-        }
+//        writeToFile(resFilePath.replaceAll(".txt", "") + "_" + salt + ".txt");
+//        if (isWriteWeight) {
+//            Utils.writeToFile(sb1.toString(), resFilePath.replaceAll(".txt", "")
+//                    + "_" + salt + "_destructor_origin_weights.txt", false);
+//            Utils.writeToFile(sb2.toString(), resFilePath.replaceAll(".txt", "")
+//                    + "_" + salt + "_constructor_origin_weights.txt", false);
+//        }
+//        if (isWriteObjective) {
+//            Utils.writeToFile(bestObjectives.toString(), resFilePath.replaceAll(".txt", "")
+//                    + "_" + salt + "_best_objectives.txt", false);
+//            Utils.writeToFile(currObjectives.toString(), resFilePath.replaceAll(".txt", "")
+//                    + "_" + salt + "_curr_objectives.txt", false);
+//            Utils.writeToFile(acceptedIteration.toString(), resFilePath.replaceAll(".txt", "")
+//                    + "_" + salt + "_accepted_iteration.txt", false);
+//        }
     }
 
     private void normalizeWeights(double[] weights, double[] normalizedWeights) {
@@ -319,7 +334,7 @@ public class ALNSSolver extends Solver {
 //            }
 //            constructor.construct(inputParam, solution, nodePairTemp);
 //            if (nodePairTemp.size() == 0) {
-//                // System.out.println(i);
+//                 System.out.println(i);
 //                return true;
 //            }
 //            nodePairNotProcessed = nodePairTemp;
@@ -338,7 +353,7 @@ public class ALNSSolver extends Solver {
      */
     private static void validation(Solution sol) {
         List<Route> routes = sol.getRoutes();
-        if (routes.size() != 25) throw new RuntimeException("Wrong number of routes.");
+//        if (routes.size() != 25) throw new RuntimeException("Wrong number of routes.");
         double totalDist = 0;
         double totalPenalty = 0;
         for (Route route : routes) {

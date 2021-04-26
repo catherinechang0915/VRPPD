@@ -76,6 +76,10 @@ public class Main {
             return;
         }
 
+        double[][] coeffs = new double[][]{ {1, 1} };
+        for (double[] coeff : coeffs) {
+            alpha = coeff[0];
+            beta = coeff[1];
         String optimalVehicleOn = mode == 1 ? "_optimalVehicle" : "";
         String sp = Utils.separator();
         String dataDir = "data" + sp + "pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + sp + alpha + "_" + beta + sp;
@@ -132,8 +136,9 @@ public class Main {
             }
             solver = new MySolver(destructorType, constructorType, noise);
         }
-        int iteration = 3;
+        int iteration = 1;
         runSolver(solver, files, dataDir, resDir, n, memberPercent, alpha, beta, iteration);
+        }
     }
 
     private static void runSolver(Solver solver, List<String> files, String dataDir, String resDir, int n, double memberPercent, double alpha, double beta, int iteration) {
@@ -175,6 +180,9 @@ public class Main {
                     avgDistance += solution.getTotalDist();
                     avgPenalty += solution.getTotalPenalty();
                     avgTime += solution.getTimeElapsed();
+                    Utils.generateAggregationFile(resAggregationFilename, filename, solution.getVehicleNumber(),
+                            solver.getSolverObjective(alpha, beta), solution.getTotalDist(), solution.getTotalPenalty(),
+                            solution.getTimeElapsed(), fail);
                 } catch (Exception e) {
                     e.printStackTrace();
                     fail++;
@@ -199,7 +207,7 @@ public class Main {
 //                generateGapFile(resGapFilename, filename, vehicleGap, objGap);
 //            }
 
-            Utils.generateAggregationFile(resAggregationFilename, filename, avgVehicle, avgObj,
+            Utils.generateAggregationFile(resAggregationFilename, "avg", avgVehicle, avgObj,
                     avgDistance, avgPenalty, avgTime, fail);
         }
         Utils.writeToFile("Average Time: " + (totalAvgTime / 1000.0 / files.size()) + "\n",

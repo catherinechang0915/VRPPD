@@ -36,6 +36,7 @@ public abstract class Destructor {
      * @param nodePair request set to be removed
      */
     protected void destroy(int N, Solution sol, List<Integer> nodePair) {
+//        System.out.println(nodePair);
         List<Node> routeNodes = null;
         for (Route route : sol.getRoutes()) {
             routeNodes = route.getNodes();
@@ -112,6 +113,6 @@ public abstract class Destructor {
      */
     public void setRandomQ(int N) {
         double percent = Math.random() * (this.percentHi - this.percentLo) + this.percentLo;
-        this.q = (int) (N * percent);
+        this.q = Math.max((int) (N * percent), 4);
     }
 }

@@ -35,6 +35,7 @@ public class OPLSolver extends Solver{
             IloOplModelDefinition def = oplF.createOplModelDefinition(modelSource, settings);
             cplex = oplF.createCplex();
             cplex.setOut(null);
+//            cplex.setParam(IloCplex.DoubleParam.TiLim, 10);
             opl = oplF.createOplModel(def, cplex);
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,6 +56,7 @@ public class OPLSolver extends Solver{
         try {
             long startTime = System.currentTimeMillis();
             opl.generate();
+            cplex.setParam(IloCplex.Param.TimeLimit, 3600);
             if (cplex.solve()) {
                 long elasped = System.currentTimeMillis() - startTime;
                 outputParam = setParam();
@@ -62,9 +64,11 @@ public class OPLSolver extends Solver{
                 // calculate detailed routes solution
                 solution = constructSolution(elasped);
                 writeToFile(resFilePath);
+                System.out.println("Solved obj" + cplex.getObjValue());
+                System.out.println("Solved best obj" + cplex.getBestObjValue());
                 oplF.end();
             } else {
-                System.out.println("No solution!");
+                System.out.println("No solution!" + cplex.getBestObjValue());
             }
             status = 0;
         } catch (IloOplException ex) {

@@ -65,6 +65,6 @@ def main(n, mem, new_weights_lst, is_first):
 if __name__ == '__main__':
     for size in [100, 200]:
         for mem in [0.3, 0.5, 0.7]:
-            main(size, mem, [[1.0, 1.0]], True)
+            # main(size, mem, [[1.0, 1.0]], True)
             new_weights_lst = [[1.0, 1.0], [1.0, 3.0], [3.0, 1.0], [5.0, 1.0]] # place [1.0, 1.0] at first position
             main(size, mem, new_weights_lst, False)

@@ -8,17 +8,18 @@ public class TATuning {
     public static void main(String[] args) {
         String sp = Utils.separator();
         double alpha = 1, beta = 1;
-        String dataDir = "data" + sp + "pdp_100_mem_0.5" + sp + alpha + "_" + beta + sp;
+//        String dataDir = "data" + sp + "pdp_200_mem_0.5" + sp + alpha + "_" + beta + sp;
+        String dataDir = "data" + sp + "tuning" + sp;
         List<String> files = Utils.fileListNoExtension(dataDir);
 
-        double TMAX = 0.1, TMIN = 0.1;
         int iteration = 5;
         Solution solution = null;
+        double[] temperatures = new double[] { 0.02, 0.0225, 0.0325, };
 
-        for (double T = TMAX; T >= TMIN; T -= 0.01) {
+        for (double T : temperatures) {
 
             String resDir = "res" + sp + "TATuning" + sp + T + sp;
-            String aggregationFilename = resDir + "aggregation.txt";
+            String aggregationFilename = resDir + "aggregation" + Utils.createSalt() + ".txt";
             Utils.generateAggregationFileHeader(aggregationFilename);
             Solver solver = new ALNSSolver(0, T);
 

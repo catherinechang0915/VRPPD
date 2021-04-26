@@ -3,6 +3,14 @@
  * Author: 7
  * Creation Date: 2020.10.26
  *********************************************/
+
+execute timeTermination {
+	cplex.tilim = 60;   // set time model stop (second)
+	//ofile.writeln("objective part 1 " + o1 + " " + alpha*o1);
+	//ofile.writeln("objective part 2 " + o3 + " " + beta*o3);
+	//ofile.writeln("objective part 3 " + o3 + " " + gamma*o3);
+}
+
 int N = ...;
 range pickup = 1..N;
 range delivery = (N+1)..(2*N);
@@ -16,8 +24,8 @@ range vehicle = 1..K;
 
 tuple nodes {
 	int q; // > 0 for pickup, < 0 for delivery
-	int tw1;
-	int tw2;
+	float tw1;
+	float tw2;
 	int s; // service time
 }
 

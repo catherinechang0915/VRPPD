@@ -143,7 +143,7 @@ public class RegretConstructor extends Constructor {
         while (true) {
             InsertPosition pos = findInsertPosition(inputParam, solution, nodePair, pqMap, updateRoute);
             if (pos == null) {
-                System.out.println(nodePair.size());
+//                System.out.println(nodePair.size());
                 //System.out.println("Regret construct no feasible solution");
                 return;
             }
