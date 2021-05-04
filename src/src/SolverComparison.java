@@ -26,7 +26,6 @@ public class SolverComparison {
         Utils.generateAggregationFileHeader(aggregationFilename);
 
         for (String filename : files) {
-            System.out.println(filename);
             Solver solver = isALNS ? new ALNSSolver(1) : new OPLSolver();
             int totalFail = 0;
             double totalObjective = 0, totalDistance = 0, totalPenalty = 0, totalVehicle = 0;

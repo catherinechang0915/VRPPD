@@ -53,13 +53,13 @@ public class Main {
                 }
                 debugSolver = new MySolver(destructorType, constructorType, noise);
             } else if (type == 2) {
-                debugSolver = new ALNSSolver(noise, 0.025);
+                debugSolver = new ALNSSolver(noise);
             } else if (type == 1) {
                 debugSolver = new OPLSolver();
             } else {
                 exit("Wrong solver type.");
             }
-            debugSolver.solve(args[1], "src" + Utils.separator() + "debug.txt");
+            debugSolver.solve(args[1], "res" + Utils.separator() + "debug.txt");
             return;
         }
 
@@ -76,10 +76,6 @@ public class Main {
             return;
         }
 
-        double[][] coeffs = new double[][]{ {1, 1} };
-        for (double[] coeff : coeffs) {
-            alpha = coeff[0];
-            beta = coeff[1];
         String optimalVehicleOn = mode == 1 ? "_optimalVehicle" : "";
         String sp = Utils.separator();
         String dataDir = "data" + sp + "pdp_" + n + "_mem_" + memberPercent + optimalVehicleOn + sp + alpha + "_" + beta + sp;
@@ -136,9 +132,8 @@ public class Main {
             }
             solver = new MySolver(destructorType, constructorType, noise);
         }
-        int iteration = 1;
+        int iteration = 5;
         runSolver(solver, files, dataDir, resDir, n, memberPercent, alpha, beta, iteration);
-        }
     }
 
     private static void runSolver(Solver solver, List<String> files, String dataDir, String resDir, int n, double memberPercent, double alpha, double beta, int iteration) {
