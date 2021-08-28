@@ -1,6 +1,8 @@
 # VRPPD
 
-This repository implements the ALNS algorithm proposed by the following paper
+In this project, traditional VRPPDTW problems were extended to take priority constraints into consideration. It is useful in real life to model the cases when customers have various levels of service quality requirement. A model for real-life food delivery was proposed using linear integer programming model. In our model, customers are categorized as members and non-members, and a shortest route was desired solution when satisfying members' time requirements. An investigation of the influence of member percentage in the data and model parameters were conducted, results were presented in the thesis.
+
+This repository implements the ALNS algorithm proposed by the following paper to solve our model
 
 ```
 @article{
